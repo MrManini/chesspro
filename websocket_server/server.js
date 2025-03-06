@@ -2,7 +2,6 @@ const WebSocket = require('ws');
 const { Client } = require('pg');
 require('dotenv').config();
 
-// Connect to PostgreSQL
 const db = new Client({
     host: process.env.DB_HOST,
     user: process.env.DB_USER,
@@ -13,6 +12,7 @@ const db = new Client({
 db.connect();
 
 const wss = new WebSocket.Server({ port: process.env.WS_PORT });
+
 let clients = [];
 
 wss.on('connection', (ws) => {
@@ -25,26 +25,7 @@ wss.on('connection', (ws) => {
     clients.push(ws);
     console.log(`Client connected (${clients.length}/2)`);
 
-    ws.on('message', async (message) => {
-        console.log(`Received: ${message}`);
-        
-        try {
-            const data = JSON.parse(message);
-            if (data.type === 'move') {
-                await db.query('UPDATE current_game SET pgn = $1 WHERE id = 1', [data.pgn]);
-
-                // Notify both clients about the move
-                clients.forEach(client => {
-                    if (client.readyState === WebSocket.OPEN) {
-                        client.send(JSON.stringify({ type: 'update', pgn: data.pgn }));
-                    }
-                });
-            }
-        } catch (err) {
-            console.error('Error processing message:', err);
-            ws.send(JSON.stringify({ type: 'error', message: 'Invalid request' }));
-        }
-    });
+    ws.send(JSON.stringify({ type: 'info', message: `You are client #${clients.length}` }));
 
     ws.on('close', () => {
         clients = clients.filter(client => client !== ws);
