@@ -19,14 +19,14 @@ let gamemode = null;
 let isGameOngoing = false;
 let player1 = null;
 let player2 = null;
-let player1Color = random;
+let player1Color = 'random';
 let player2Color = null;
 
 wss.on('connection', (ws) => {
     if (!admin) {
         admin = ws;
         ws.send(JSON.stringify({type: "role", role: "admin"}));
-    } else if (admin && gamemode === 'pvp' && player2 === 'null') {
+    } else if (admin && gamemode === 'pvp' && player2 === null) {
         ws.send(JSON.stringify({type: "role", role: "player2"}));
     } else {
         ws.send(JSON.stringify({type: "role", role: "spectator"}));
@@ -205,6 +205,32 @@ async function handleBlackMove(ws, blackMove) {
     // Update last row with Black's move
     await db.query('UPDATE current_game SET black_halfmove = $1 WHERE move = $2', [blackMove, lastMove.rows[0].move]);
     broadcastGameState();
+}
+
+async function getPGN(result){
+    // Get all moves from the current_game table
+    const result = await db.query("SELECT * FROM current_game ORDER BY move");
+
+    // Convert moves into PGN format
+    let pgn = "";
+    result.rows.forEach(row => {
+        pgn += `${row.move}.${row.white_halfmove || ''} ${row.black_halfmove || ''} `;
+    });
+
+    if (result === 'WHITE_WIN') pgn += '1-0';
+    if (result === 'BLACK_WIN') pgn += '0-1';
+    if (result === 'DRAW' || result === 'STALEMATE') pgn += '1/2-1/2';
+
+    return pgn;
+}
+
+async function endGame(reason, result) {
+    console.log(`Game ended: ${reason}`)
+    isGameOngoing = false;
+    player1 = null;
+    player2 = null;
+    let pgn = await getPGN(result);
+
 }
 
 async function resetGame(ws) {
