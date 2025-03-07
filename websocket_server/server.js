@@ -14,28 +14,63 @@ db.connect();
 const wss = new WebSocket.Server({ port: process.env.WS_PORT });
 
 let clients = [];
+let admin = null;
+let gamemode = null;
+let isGameOngoing = false;
+let player1 = null;
+let player2 = null;
+let player1Color = random;
+let player2Color = null;
 
 wss.on('connection', (ws) => {
-    if (clients.length >= 2) {
-        ws.send(JSON.stringify({ type: 'error', message: 'Server full' }));
-        ws.close();
-        return;
+    if (!admin) {
+        admin = ws;
+        ws.send(JSON.stringify({type: "role", role: "admin"}));
+    } else if (admin && gamemode === 'pvp' && player2 === 'null') {
+        ws.send(JSON.stringify({type: "role", role: "player2"}));
+    } else {
+        ws.send(JSON.stringify({type: "role", role: "spectator"}));
     }
 
+    sendGameState(ws);
     clients.push(ws);
-    console.log(`Client connected (${clients.length}/2)`);
+    console.log(`Client connected (${clients.length} total)`);
 
     ws.send(JSON.stringify({ type: 'info', message: `You are client #${clients.length}` }));
 
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
-            if (data.command === "white_move") {
-                await handleWhiteMove(ws, data.move);
-            } else if (data.command === "black_move") {
-                await handleBlackMove(ws, data.move);
-            } else if (data.command === "reset") {
-                await resetGame(ws);
+            // Admin-specific commands
+            if (ws === admin) {
+                if (data.command === "admin.set_mode" && !isGameOngoing) {
+                    setGameMode(data.mode);
+                }
+                if (data.command === "admin.set_color" && !isGameOngoing) {
+                    setColor(data.color);
+                }
+                if (data.command === "admin.start_game" && isGameReady()) {
+                    await resetGame();
+                    setColor(player1Color);
+                    isGameOngoing = true;
+                }
+                if (data.command === "admin.transfer_admin") {
+                    transferAdmin(data.targetWs);
+                }
+            }
+            // Player-specific commands
+            if (ws === player1 && isGameOngoing) {
+                if (player1Color === "white" && data.command === "white_move") {
+                    await handleWhiteMove(ws, data.move);
+                } else if (player1Color === "black" && data.command === "black_move") {
+                    await handleBlackMove(ws, data.move);
+                }
+            } else if (ws === player2 && isGameOngoing) {
+                if (player2Color === "white" && data.command === "white_move") {
+                    await handleWhiteMove(ws, data.move);
+                } else if (player2Color === "black" && data.command === "black_move") {
+                    await handleBlackMove(ws, data.move);
+                }
             }
         } catch (error) {
             console.error("Error handling message:", error);
@@ -44,9 +79,86 @@ wss.on('connection', (ws) => {
 
     ws.on('close', () => {
         clients = clients.filter(client => client !== ws);
-        console.log(`Client disconnected (${clients.length}/2)`);
+        if (ws === admin) {
+            admin = null;
+            if (clients.length > 0) transferAdmin(clients[0]);
+        }
+        if (ws === player1) {
+            player1 = null;
+            // TODO end game from disconnection
+        }
+        if (ws === player2){
+            player2 = null;
+        }
+        console.log(`Client disconnected (${clients.length} total)`);
     });
 });
+
+function transferAdmin(targetWs) {
+    if (wss.clients.has(targetWs)) {
+        admin = targetWs;
+        admin.send(JSON.stringify({ type: "role", role: "admin" }));
+    }
+}
+
+function setGameMode(mode) {
+    gamemode = mode;
+    if (mode === "pvp") {
+        const clients = Array.from(wss.clients);
+        player1 = admin;
+        player1.send(JSON.stringify({ type: "role", role: "player1" }));
+        player2 = clients.find((ws) => ws !== admin);
+        if (player2) {
+            player2.send(JSON.stringify({ type: "role", role: "player2" }));
+        }
+    } else if (mode === "pvb") {
+        player1 = admin;
+        player1.send(JSON.stringify({ type: "role", role: "player1" }));
+        player2 = null;
+    } else if (mode === "bvb") {
+        player1 = null;
+        player2 = null;
+    }
+}
+
+function sendGameState(ws) {
+    db.query('SELECT * FROM current_game ORDER BY move ASC')
+        .then((result) => {
+            ws.send(JSON.stringify({ type: "game_state", gameState: result.rows }));
+        })
+        .catch((err) => console.error("Error sending game state:", err));
+}
+
+function transferAdmin(targetWs) {
+    if (wss.clients.has(targetWs)) {
+        admin = targetWs;
+        admin.send(JSON.stringify({ type: "role", role: "admin" }));
+    }
+}
+
+function setColor(color) {
+    if (!["white", "black", "random"].includes(color)) {
+        return { success: false, message: "Invalid color choice. Use 'white', 'black', or 'random'." };
+    }
+
+    if (color === "random") {
+        color = Math.random() < 0.5 ? "white" : "black";
+    }
+
+    player1Color = color;
+    player2Color = color === "white" ? "black" : "white";
+}
+
+function isGameReady() {
+    if (gamemode === 'pvp') {
+        return !isGameOngoing && player1 && player2;
+    } else if (gamemode === 'pvb') {
+        return !isGameOngoing && player1;
+    } else if (gamemode === 'bvb') {
+        return !isGameOngoing;
+    }
+    return false;
+}
 
 function broadcastGameState() {
     db.query('SELECT * FROM current_game ORDER BY move ASC')
@@ -96,8 +208,9 @@ async function handleBlackMove(ws, blackMove) {
 }
 
 async function resetGame(ws) {
-    await db.query('TRUNCATE TABLE current_game RESTART IDENTITY');
-    broadcastGameState();
+    await db.query("TRUNCATE TABLE current_game RESTART IDENTITY")
+        .then(() => console.log("Game reset"))
+        .catch(console.error);
 }
 
 console.log(`WebSocket server running on ws://localhost:${process.env.WS_PORT}`);
