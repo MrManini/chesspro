@@ -1,5 +1,6 @@
 const WebSocket = require('ws');
 const { Client } = require('pg');
+const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
 const db = new Client({
@@ -21,8 +22,29 @@ let player1 = null;
 let player2 = null;
 let player1Color = 'random';
 let player2Color = null;
+let lastUsernameConnected = null;
 
-wss.on('connection', (ws) => {
+wss.on('connection', async (ws, req) => {
+    const token = new URL(req.url, `http://localhost`).searchParams.get('token');
+    if (!token) {
+        ws.close();
+        return;
+    }
+
+    try {
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await db.query('SELECT * FROM users where uuid = $1', [decoded.uuid]);
+        if (user.rows.length === 0) {
+            ws.close();
+            return;
+        }
+        lastUsernameConnected = user.rows[0].username;
+    } catch (error) {
+        console.log(`Closed connection due to error: ${error}`);
+        ws.close();
+        return;
+    }
+
     if (!admin) {
         admin = ws;
         ws.send(JSON.stringify({type: "role", role: "admin"}));
@@ -34,9 +56,9 @@ wss.on('connection', (ws) => {
 
     sendGameState(ws);
     clients.add(ws);
-    console.log(`Client connected (${clients.length} total)`);
+    console.log(`Client (${lastUsernameConnected}) connected (${clients.size} total)`);
 
-    ws.send(JSON.stringify({ type: 'info', message: `You are client #${clients.length}` }));
+    ws.send(JSON.stringify({ type: 'info', message: `You are client #${clients.size}` }));
 
     ws.on('message', async (message) => {
         try {
@@ -81,7 +103,7 @@ wss.on('connection', (ws) => {
         clients.delete(ws);
         if (ws === admin) {
             admin = null;
-            if (clients.length > 0) transferAdmin(clients[0]);
+            if (clients.size > 0) transferAdmin(clients[0]);
         }
         if (ws === player1) {
             player1 = null;
@@ -90,7 +112,7 @@ wss.on('connection', (ws) => {
         if (ws === player2){
             player2 = null;
         }
-        console.log(`Client disconnected (${clients.length} total)`);
+        console.log(`Client disconnected (${clients.size} total)`);
     });
 });
 
