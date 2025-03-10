@@ -13,7 +13,7 @@ db.connect();
 
 const wss = new WebSocket.Server({ port: process.env.WS_PORT });
 
-let clients = [];
+let clients = new Set();
 let admin = null;
 let gamemode = null;
 let isGameOngoing = false;
@@ -33,7 +33,7 @@ wss.on('connection', (ws) => {
     }
 
     sendGameState(ws);
-    clients.push(ws);
+    clients.add(ws);
     console.log(`Client connected (${clients.length} total)`);
 
     ws.send(JSON.stringify({ type: 'info', message: `You are client #${clients.length}` }));
@@ -78,7 +78,7 @@ wss.on('connection', (ws) => {
     });
 
     ws.on('close', () => {
-        clients = clients.filter(client => client !== ws);
+        clients.delete(ws);
         if (ws === admin) {
             admin = null;
             if (clients.length > 0) transferAdmin(clients[0]);
@@ -127,13 +127,6 @@ function sendGameState(ws) {
             ws.send(JSON.stringify({ type: "game_state", gameState: result.rows }));
         })
         .catch((err) => console.error("Error sending game state:", err));
-}
-
-function transferAdmin(targetWs) {
-    if (wss.clients.has(targetWs)) {
-        admin = targetWs;
-        admin.send(JSON.stringify({ type: "role", role: "admin" }));
-    }
 }
 
 function setColor(color) {
@@ -207,19 +200,19 @@ async function handleBlackMove(ws, blackMove) {
     broadcastGameState();
 }
 
-async function getPGN(result){
+async function getPGN(gameResult) {
     // Get all moves from the current_game table
-    const result = await db.query("SELECT * FROM current_game ORDER BY move");
+    const queryResult = await db.query("SELECT * FROM current_game ORDER BY move");
 
     // Convert moves into PGN format
     let pgn = "";
-    result.rows.forEach(row => {
+    queryResult.rows.forEach(row => {
         pgn += `${row.move}.${row.white_halfmove || ''} ${row.black_halfmove || ''} `;
     });
 
-    if (result === 'WHITE_WIN') pgn += '1-0';
-    if (result === 'BLACK_WIN') pgn += '0-1';
-    if (result === 'DRAW' || result === 'STALEMATE') pgn += '1/2-1/2';
+    if (gameResult === 'WHITE_WIN') pgn += '1-0';
+    if (gameResult === 'BLACK_WIN') pgn += '0-1';
+    if (gameResult === 'DRAW' || gameResult === 'STALEMATE') pgn += '1/2-1/2';
 
     return pgn;
 }
