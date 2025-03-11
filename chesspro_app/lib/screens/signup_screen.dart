@@ -1,13 +1,30 @@
 import 'package:flutter/material.dart';
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:chesspro_app/widgets/password_text_field.dart';
+import 'package:chesspro_app/services/api_service.dart';
+import 'package:logger/logger.dart';
 
 class SignupScreen extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  static var logger = Logger();
 
   SignupScreen({super.key});
+
+  void signUp() async {
+    final response = await ApiService.signUpUser(
+      usernameController.text,
+      emailController.text,
+      passwordController.text,
+    );
+
+    if (response != null) {
+      logger.i("Sign-up successful: $response");
+    } else {
+      logger.e("Sign-up failed");
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,8 +37,18 @@ class SignupScreen extends StatelessWidget {
             Align(
               alignment: Alignment.topLeft,
               child: IconButton(
-                icon: Icon(Icons.arrow_back, size: 25, color: AppStyles.getDefaultColor(context)),
-                onPressed: () {Navigator.pushNamedAndRemoveUntil(context, '/welcome', (route) => false);},
+                icon: Icon(
+                  Icons.arrow_back,
+                  size: 25,
+                  color: AppStyles.getDefaultColor(context),
+                ),
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/welcome',
+                    (route) => false,
+                  );
+                },
               ),
             ),
             Expanded(
@@ -69,9 +96,7 @@ class SignupScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: () {
-                        // TODO: Handle signup logic
-                      },
+                      onPressed: signUp,
                       style: AppStyles.getPrimaryButtonStyle(context),
                       child: Text("Sign Up", style: TextStyle(fontSize: 18)),
                     ),
@@ -84,11 +109,16 @@ class SignupScreen extends StatelessWidget {
                       child: RichText(
                         text: TextSpan(
                           text: "Already have an account? ",
-                          style: TextStyle(color: AppStyles.getDefaultColor(context)),
+                          style: TextStyle(
+                            color: AppStyles.getDefaultColor(context),
+                          ),
                           children: [
                             TextSpan(
                               text: "Log in",
-                              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
