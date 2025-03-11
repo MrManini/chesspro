@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
 
 class ApiService {
-  static const String baseUrl = "http://localhost:3264";
+  static const String baseUrl = "http://3.16.27.216:3264";
   static var logger = Logger();
 
   static Future<Map<String, dynamic>?> signUpUser(
