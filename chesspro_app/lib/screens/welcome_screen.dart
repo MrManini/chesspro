@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-//import 'login_screen.dart';
-//import 'signup_screen.dart';
+import 'package:chesspro_app/utils/styles.dart';
 
 class WelcomeScreen extends StatelessWidget {
   const WelcomeScreen({super.key});
@@ -11,8 +10,6 @@ class WelcomeScreen extends StatelessWidget {
     bool isDarkMode =
         MediaQuery.of(context).platformBrightness == Brightness.dark;
     double screenWidth = MediaQuery.of(context).size.width;
-    Color whiteButtonColor = Color(0xffced4da);
-    Color blackButtonColor = Color(0xff343a40);
 
     return Scaffold(
       body: Column(
@@ -31,16 +28,9 @@ class WelcomeScreen extends StatelessWidget {
                 width: screenWidth * 0.9,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigator.push(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+                    Navigator.pushNamed(context, '/login');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDarkMode ? blackButtonColor : whiteButtonColor,
-                    foregroundColor: isDarkMode ? Colors.white : Colors.black,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
+                  style: AppStyles.getSecondaryButtonStyle(context),
                   child: Text("Login", style: TextStyle(fontSize: 18)),
                 ),
               ),
@@ -49,16 +39,9 @@ class WelcomeScreen extends StatelessWidget {
                 width: screenWidth * 0.9,
                 child: ElevatedButton(
                   onPressed: () {
-                    // Navigator.push(context, MaterialPageRoute(builder: (context) => SignupScreen()));
+                    Navigator.pushNamed(context, '/signup');
                   },
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: isDarkMode ? whiteButtonColor : blackButtonColor,
-                    foregroundColor: isDarkMode ? Colors.black : Colors.white,
-                    padding: EdgeInsets.symmetric(vertical: 16),
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(5),
-                    ),
-                  ),
+                  style: AppStyles.getPrimaryButtonStyle(context),
                   child: Text("Sign Up", style: TextStyle(fontSize: 18)),
                 ),
               ),

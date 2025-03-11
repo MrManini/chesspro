@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart';
+import 'screens/signup_screen.dart';
+import 'screens/login_screen.dart';
 import 'theme.dart';
 
 void main() {
@@ -17,7 +19,12 @@ class MyApp extends StatelessWidget {
       themeMode: ThemeMode.system,
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-      home: WelcomeScreen(),
+      initialRoute: '/welcome',
+      routes: {
+        '/welcome': (context) => WelcomeScreen(),
+        '/signup': (context) => SignupScreen(),
+        '/login': (context) => LoginScreen(),
+      },
     );
   }
 }
