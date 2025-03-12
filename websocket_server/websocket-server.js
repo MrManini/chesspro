@@ -1,16 +1,15 @@
 const WebSocket = require('ws');
-const { Client } = require('pg');
+const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 
-const db = new Client({
-    host: process.env.DB_HOST,
+const pool = new Pool({
     user: process.env.DB_USER,
-    password: process.env.DB_PASS,
+    host: process.env.DB_HOST,
     database: process.env.DB_NAME,
+    password: process.env.DB_PASS,
     port: 5432,
 });
-db.connect();
 
 const wss = new WebSocket.Server({ port: process.env.WS_PORT });
 
@@ -33,7 +32,7 @@ wss.on('connection', async (ws, req) => {
 
     try {
         const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        const user = await db.query('SELECT * FROM users where uuid = $1', [decoded.uuid]);
+        const user = await pool.query('SELECT * FROM users where uuid = $1', [decoded.uuid]);
         if (user.rows.length === 0) {
             ws.close();
             return;
@@ -144,7 +143,7 @@ function setGameMode(mode) {
 }
 
 function sendGameState(ws) {
-    db.query('SELECT * FROM current_game ORDER BY move ASC')
+    pool.query('SELECT * FROM current_game ORDER BY move ASC')
         .then((result) => {
             ws.send(JSON.stringify({ type: "game_state", gameState: result.rows }));
         })
@@ -176,7 +175,7 @@ function isGameReady() {
 }
 
 function broadcastGameState() {
-    db.query('SELECT * FROM current_game ORDER BY move ASC')
+    pool.query('SELECT * FROM current_game ORDER BY move ASC')
         .then((result) => {
             const gameState = result.rows;
             wss.clients.forEach((client) => {
@@ -189,7 +188,7 @@ function broadcastGameState() {
 }
 
 async function handleWhiteMove(ws, whiteMove) {
-    const lastMove = await db.query('SELECT * FROM current_game ORDER BY move DESC LIMIT 1');
+    const lastMove = await pool.query('SELECT * FROM current_game ORDER BY move DESC LIMIT 1');
 
     // If there's already an unresponded white move, prevent another one
     if (lastMove.rows.length > 0 && lastMove.rows[0].black_halfmove === null) {
@@ -198,12 +197,12 @@ async function handleWhiteMove(ws, whiteMove) {
     }
 
     // Insert white move
-    await db.query('INSERT INTO current_game (white_halfmove) VALUES ($1)', [whiteMove]);
+    await pool.query('INSERT INTO current_game (white_halfmove) VALUES ($1)', [whiteMove]);
     broadcastGameState();
 }
 
 async function handleBlackMove(ws, blackMove) {
-    const lastMove = await db.query('SELECT * FROM current_game ORDER BY move DESC LIMIT 1');
+    const lastMove = await pool.query('SELECT * FROM current_game ORDER BY move DESC LIMIT 1');
 
     // If there's no previous white move, Black cannot play
     if (lastMove.rows.length === 0) {
@@ -218,13 +217,13 @@ async function handleBlackMove(ws, blackMove) {
     }
 
     // Update last row with Black's move
-    await db.query('UPDATE current_game SET black_halfmove = $1 WHERE move = $2', [blackMove, lastMove.rows[0].move]);
+    await pool.query('UPDATE current_game SET black_halfmove = $1 WHERE move = $2', [blackMove, lastMove.rows[0].move]);
     broadcastGameState();
 }
 
 async function getPGN(gameResult) {
     // Get all moves from the current_game table
-    const queryResult = await db.query("SELECT * FROM current_game ORDER BY move");
+    const queryResult = await pool.query("SELECT * FROM current_game ORDER BY move");
 
     // Convert moves into PGN format
     let pgn = "";
@@ -249,7 +248,7 @@ async function endGame(reason, result) {
 }
 
 async function resetGame(ws) {
-    await db.query("TRUNCATE TABLE current_game RESTART IDENTITY")
+    await pool.query("TRUNCATE TABLE current_game RESTART IDENTITY")
         .then(() => console.log("Game reset"))
         .catch(console.error);
 }
