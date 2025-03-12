@@ -19,7 +19,7 @@ class SignupScreen extends StatelessWidget {
       passwordController.text,
     );
 
-    if (response != null) {
+    if (response != null && !response.containsKey("error")) {
       logger.i("Sign-up successful: $response");
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -31,12 +31,15 @@ class SignupScreen extends StatelessWidget {
       Future.delayed(Duration(seconds: 2), () {
         Navigator.pushReplacementNamed(context, '/home');
       });
-
     } else {
       logger.e("Sign-up failed");
+      String errorMessage = "";
+      if (response != null && response.containsKey("error")) {
+        errorMessage = response["error"];
+      }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error creating user 😢'),
+          content: Text('Error creating user 😢. $errorMessage'),
           backgroundColor: Colors.red,
         ),
       );

@@ -28,7 +28,7 @@ class ApiService {
         return jsonDecode(response.body);
       } else {
         logger.e("Error ${response.statusCode}: ${response.body}");
-        return null;
+        return jsonDecode(response.body);
       }
     } catch (e) {
       logger.e("Error: $e");
