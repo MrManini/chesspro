@@ -24,7 +24,7 @@ class ApiService {
         }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         logger.e("Error ${response.statusCode}: ${response.body}");
