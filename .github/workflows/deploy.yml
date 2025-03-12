@@ -13,7 +13,7 @@ jobs:
       
       - name: run backend server
         run: |
-          cd chesspro_backend
+          cd app_backend
           cp ~/env-variables/.env-backend ./.env
           npm install
           pm2 restart app-backend
