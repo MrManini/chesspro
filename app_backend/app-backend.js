@@ -67,6 +67,16 @@ app.post("/signup", async (req, res) => {
             "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING uuid, username, email",
             [username, email, passwordHash]
         );
+        // Generate JWT tokens
+        const accessToken = generateToken(user, 'access');
+        const refreshToken = generateToken(user, 'refresh');
+
+        res.json({ 
+            message: "Login successful!", 
+            token, 
+            user: { uuid: user.uuid, username: user.username, email: user.email },
+            tokens: {accessToken: accessToken, refreshToken: refreshToken},
+        });
         res.status(201).json({ message: "User created successfully!", user: newUser.rows[0] });
     } catch (error) {
         console.error(error);
@@ -95,22 +105,40 @@ app.post("/login", async (req, res) => {
         if (!isMatch) {
             return res.status(401).json({ error: "Invalid credentials." });
         }
-        // Generate JWT token
-        const token = jwt.sign(
-            { uuid: user.uuid, username: user.username, email: user.email },
-            process.env.JWT_SECRET,
-            { expiresIn: "7d" }
-        );
+        // Generate JWT tokens
+        const accessToken = generateToken(user, 'access');
+        const refreshToken = generateToken(user, 'refresh');
+
         res.json({ 
             message: "Login successful!", 
-            token, 
-            user: { uuid: user.uuid, username: user.username, email: user.email } 
+            user: { uuid: user.uuid, username: user.username, email: user.email },
+            tokens: {accessToken: accessToken, refreshToken: refreshToken},
         });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error." });
     }
 });
+
+function generateToken(user, type) {
+    let secret;
+    let time;
+    if (type === refresh) {
+        secret = process.env.JWT_REFRESH_SECRET;
+        time = '60d';
+    } else {
+        secret = process.env.JWT_ACCESS_SECRET;
+        time = '7d';
+    }
+
+    const token = jwt.sign(
+        { uuid: user.uuid, username: user.username, email: user.email },
+        secret,
+        { expiresIn: time }
+    );
+
+    return token;
+}
 
 // Start Server
 const PORT = process.env.PORT || 3000;

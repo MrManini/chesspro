@@ -1,16 +1,22 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:logger/logger.dart';
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:chesspro_app/widgets/password_text_field.dart';
 import 'package:chesspro_app/services/api_service.dart';
-import 'package:logger/logger.dart';
 
 class SignupScreen extends StatelessWidget {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   static var logger = Logger();
+  final storage = FlutterSecureStorage();
 
   SignupScreen({super.key});
+
+  Future<void> saveLoginState(String token) async {
+    await storage.write(key: 'auth_token', value: token);
+  }
 
   void signUp(context) async {
     final response = await ApiService.signUpUser(
