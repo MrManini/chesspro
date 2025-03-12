@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
+import 'screens/home_screen.dart';
 import 'theme.dart';
 
 void main() {
@@ -24,6 +25,7 @@ class MyApp extends StatelessWidget {
         '/welcome': (context) => WelcomeScreen(),
         '/signup': (context) => SignupScreen(),
         '/login': (context) => LoginScreen(),
+        '/home': (context) => HomeScreen(),
       },
     );
   }

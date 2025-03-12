@@ -12,7 +12,7 @@ class SignupScreen extends StatelessWidget {
 
   SignupScreen({super.key});
 
-  void signUp() async {
+  void signUp(context) async {
     final response = await ApiService.signUpUser(
       usernameController.text,
       emailController.text,
@@ -21,8 +21,25 @@ class SignupScreen extends StatelessWidget {
 
     if (response != null) {
       logger.i("Sign-up successful: $response");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('User created successfully! 🎉'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Future.delayed(Duration(seconds: 2), () {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+
     } else {
       logger.e("Sign-up failed");
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error creating user 😢'),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 
@@ -96,7 +113,9 @@ class SignupScreen extends StatelessWidget {
                     ),
                     SizedBox(height: 30),
                     ElevatedButton(
-                      onPressed: signUp,
+                      onPressed: () {
+                        signUp(context);
+                      },
                       style: AppStyles.getPrimaryButtonStyle(context),
                       child: Text("Sign Up", style: TextStyle(fontSize: 18)),
                     ),

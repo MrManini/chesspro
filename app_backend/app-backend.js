@@ -18,9 +18,9 @@ const pool = new Pool({
     password: process.env.DB_PASS,
     port: 5432,
     ssl: { 
-      require: true,
-      rejectUnauthorized: true,
-      ca: fs.readFileSync('/etc/ssl/certs/us-east-2-bundle.pem').toString(), 
+        require: true,
+        rejectUnauthorized: true,
+        ca: fs.readFileSync('/etc/ssl/certs/us-east-2-bundle.pem').toString(), 
     }
 });
 
