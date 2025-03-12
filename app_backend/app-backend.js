@@ -1,5 +1,6 @@
 require("dotenv").config();
 const express = require("express");
+const fs = require('fs');
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");

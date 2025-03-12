@@ -1,4 +1,5 @@
 const WebSocket = require('ws');
+const fs = require('fs');
 const { Pool } = require('pg');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
