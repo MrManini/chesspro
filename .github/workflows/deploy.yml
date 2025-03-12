@@ -17,13 +17,10 @@ jobs:
           cp ~/env-variables/.env-backend ./.env
           npm install
           pm2 restart app-backend
-
-      - name: test pwd
-        run: pwd
         
       - name: run websocket server
         run: |
-          cd ../websocket_server
+          cd websocket_server
           cp ~/env-variables/.env-websocket ./.env
           npm install
           pm2 restart websocket-server
