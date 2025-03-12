@@ -27,33 +27,65 @@ const pool = new Pool({
 // Signup Route
 app.post("/signup", async (req, res) => {
     const { username, email, password } = req.body;
-
     if (!username || !email || !password) {
         return res.status(400).json({ error: "All fields are required." });
     }
-
     try {
         // Check if email or username already exists
         const checkUser = await pool.query(
             "SELECT * FROM users WHERE email = $1 OR username = $2",
             [email, username]
         );
-
         if (checkUser.rows.length > 0) {
             return res.status(400).json({ error: "Username or email already exists." });
         }
-
         // Hash password
         const salt = await bcrypt.genSalt(10);
         const passwordHash = await bcrypt.hash(password, salt);
-
         // Insert new user
         const newUser = await pool.query(
             "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING uuid, username, email",
             [username, email, passwordHash]
         );
-
         res.status(201).json({ message: "User created successfully!", user: newUser.rows[0] });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: "Server error." });
+    }
+});
+
+// Login Route (Allows username or email)
+app.post("/login", async (req, res) => {
+    const { identifier, password } = req.body; // 'identifier' can be email or username
+    if (!identifier || !password) {
+        return res.status(400).json({ error: "Username/email and password are required." });
+    }
+    try {
+        // Check if user exists using either email or username
+        const userQuery = await pool.query(
+            "SELECT * FROM users WHERE email = $1 OR username = $1",
+            [identifier]
+        );
+        if (userQuery.rows.length === 0) {
+            return res.status(401).json({ error: "Invalid credentials." });
+        }
+        const user = userQuery.rows[0];
+        // Compare password
+        const isMatch = await bcrypt.compare(password, user.password);
+        if (!isMatch) {
+            return res.status(401).json({ error: "Invalid credentials." });
+        }
+        // Generate JWT token
+        const token = jwt.sign(
+            { uuid: user.uuid, username: user.username, email: user.email },
+            process.env.JWT_SECRET,
+            { expiresIn: "7d" }
+        );
+        res.json({ 
+            message: "Login successful!", 
+            token, 
+            user: { uuid: user.uuid, username: user.username, email: user.email } 
+        });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error." });

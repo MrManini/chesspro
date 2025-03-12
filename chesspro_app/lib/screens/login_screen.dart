@@ -1,17 +1,51 @@
 import 'package:flutter/material.dart';
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:chesspro_app/widgets/password_text_field.dart';
+import 'package:chesspro_app/services/api_service.dart';
+import 'package:logger/logger.dart';
 
 class LoginScreen extends StatelessWidget {
-
   final TextEditingController usernameOrEmailController =
       TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  static var logger = Logger();
 
   LoginScreen({super.key});
 
+  void login(context) async {
+    final response = await ApiService.loginUser(
+      usernameOrEmailController.text, // Can be either username or email
+      passwordController.text,
+    );
+
+    if (response != null && response.containsKey("token")) {
+      logger.i("Login successful: $response");
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login successful! 🎉'),
+          backgroundColor: Colors.green,
+        ),
+      );
+
+      Future.delayed(Duration(seconds: 2), () {
+        Navigator.pushReplacementNamed(context, '/home');
+      });
+    } else {
+      logger.e("Login failed");
+      String errorMessage = response?["error"] ?? "Unknown error";
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Login failed 😢\n$errorMessage'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
+
   @override
-Widget build(BuildContext context) {
+  Widget build(BuildContext context) {
     return Scaffold(
       body: Padding(
         padding: const EdgeInsets.all(20),
@@ -21,8 +55,18 @@ Widget build(BuildContext context) {
             Align(
               alignment: Alignment.topLeft,
               child: IconButton(
-                icon: Icon(Icons.arrow_back, size: 25, color: AppStyles.getDefaultColor(context)),
-                onPressed: () {Navigator.pushNamedAndRemoveUntil(context, '/welcome', (route) => false);},
+                icon: Icon(
+                  Icons.arrow_back,
+                  size: 25,
+                  color: AppStyles.getDefaultColor(context),
+                ),
+                onPressed: () {
+                  Navigator.pushNamedAndRemoveUntil(
+                    context,
+                    '/welcome',
+                    (route) => false,
+                  );
+                },
               ),
             ),
             Expanded(
@@ -59,7 +103,7 @@ Widget build(BuildContext context) {
                     SizedBox(height: 30),
                     ElevatedButton(
                       onPressed: () {
-                        // TODO: Handle login logic
+                        login(context);
                       },
                       style: AppStyles.getPrimaryButtonStyle(context),
                       child: Text("Log In", style: TextStyle(fontSize: 18)),
@@ -73,11 +117,16 @@ Widget build(BuildContext context) {
                       child: RichText(
                         text: TextSpan(
                           text: "Don't have an account? ",
-                          style: TextStyle(color: AppStyles.getDefaultColor(context)),
+                          style: TextStyle(
+                            color: AppStyles.getDefaultColor(context),
+                          ),
                           children: [
                             TextSpan(
                               text: "Sign up",
-                              style: TextStyle(color: Colors.blue, fontWeight: FontWeight.bold),
+                              style: TextStyle(
+                                color: Colors.blue,
+                                fontWeight: FontWeight.bold,
+                              ),
                             ),
                           ],
                         ),
