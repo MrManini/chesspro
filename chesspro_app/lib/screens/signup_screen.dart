@@ -39,7 +39,7 @@ class SignupScreen extends StatelessWidget {
       }
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text('Error creating user 😢. $errorMessage'),
+          content: Text('Error creating user 😢\n$errorMessage'),
           backgroundColor: Colors.red,
         ),
       );
