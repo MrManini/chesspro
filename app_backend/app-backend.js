@@ -5,6 +5,7 @@ const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { Pool } = require("pg");
 const cors = require("cors");
+const validator = require("validator");
 
 const app = express();
 app.use(express.json());
@@ -24,6 +25,9 @@ const pool = new Pool({
     }
 });
 
+const usernameRegex = /^(?=.*[a-zA-Z])[a-zA-Z0-9._-]{3,16}$/;
+const passwordRegex = /^(?=.*[A-Za-z])(?=.*\d)[A-Za-z\d@$!%*?&]{8,}$/;
+
 // Signup Route
 app.post("/signup", async (req, res) => {
     const { username, email, password } = req.body;
@@ -31,6 +35,22 @@ app.post("/signup", async (req, res) => {
         return res.status(400).json({ error: "All fields are required." });
     }
     try {
+        // Check for valid fields
+        if (!usernameRegex.test(username)) {
+            res.status(400).json({ error: `Invalid username. Must be 3-16 characters long and contain at least one letter.\n
+                Only letters, numbers and (-_.) are allowed.` });
+            return;
+        }
+        if (!validator.isEmail(email)) {
+            res.status(400).json({ error: "Invalid email format." });
+            return;
+        }
+        if (!passwordRegex.test(password)) {
+            res.status(400).json({ error: `Invalid password format. 
+                Must be at least 8 characters long and contain at least one letter and one number.`});
+            return;
+        }
+
         // Check if email or username already exists
         const checkUser = await pool.query(
             "SELECT * FROM users WHERE email = $1 OR username = $2",
