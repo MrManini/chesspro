@@ -33,25 +33,25 @@ app.post("/signup", async (req, res) => {
     }
 
     try {
-      // Check if email or username already exists
-      const checkUser = await pool.query(
-          "SELECT * FROM users WHERE email = $1 OR username = $2",
-          [email, username]
-      );
+        // Check if email or username already exists
+        const checkUser = await pool.query(
+            "SELECT * FROM users WHERE email = $1 OR username = $2",
+            [email, username]
+        );
 
-      if (checkUser.rows.length > 0) {
-          return res.status(400).json({ error: "Username or email already exists." });
-      }
+        if (checkUser.rows.length > 0) {
+            return res.status(400).json({ error: "Username or email already exists." });
+        }
 
-      // Hash password
-      const salt = await bcrypt.genSalt(10);
-      const passwordHash = await bcrypt.hash(password, salt);
+        // Hash password
+        const salt = await bcrypt.genSalt(10);
+        const passwordHash = await bcrypt.hash(password, salt);
 
-      // Insert new user
-      const newUser = await pool.query(
-          "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING id, username, email",
-          [username, email, passwordHash]
-      );
+        // Insert new user
+        const newUser = await pool.query(
+            "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING uuid, username, email",
+            [username, email, passwordHash]
+        );
 
         res.status(201).json({ message: "User created successfully!", user: newUser.rows[0] });
     } catch (error) {
