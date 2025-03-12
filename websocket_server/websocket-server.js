@@ -9,6 +9,11 @@ const pool = new Pool({
     database: process.env.DB_NAME,
     password: process.env.DB_PASS,
     port: 5432,
+    ssl: {
+        require: true,
+        rejectUnauthorized: true,
+        ca: fs.readFileSync('/etc/ssl/certs/us-east-2-bundle.pem').toString(), 
+    }
 });
 
 const wss = new WebSocket.Server({ port: process.env.WS_PORT });
