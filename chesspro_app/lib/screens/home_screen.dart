@@ -7,7 +7,7 @@ class HomeScreen extends StatelessWidget {
 
   Future<void> _logout(BuildContext context) async {
     await StorageHelper.clearTokens();
-    if (context.mounted) Navigator.pushReplacementNamed(context, '/login');
+    if (context.mounted) Navigator.pushReplacementNamed(context, '/w');
   }
 
 

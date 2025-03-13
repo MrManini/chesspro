@@ -41,7 +41,7 @@ class MyAppState extends State<MyApp> {
       themeMode: ThemeMode.system,
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-      initialRoute: _initialScreen,
+      initialRoute: _initialScreen ?? '/welcome',
       routes: {
         '/welcome': (context) => WelcomeScreen(),
         '/signup': (context) => SignupScreen(),
