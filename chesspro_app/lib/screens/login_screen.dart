@@ -4,18 +4,23 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:chesspro_app/widgets/password_text_field.dart';
 import 'package:chesspro_app/services/api_service.dart';
+import 'package:chesspro_app/utils/storage_helper.dart';
 
+class LoginScreen extends StatefulWidget {
+  const LoginScreen({super.key});
 
-class LoginScreen extends StatelessWidget {
+  @override
+  LoginScreenState createState() => LoginScreenState();
+}
+
+class LoginScreenState extends State<LoginScreen> {
   final TextEditingController usernameOrEmailController =
       TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   static var logger = Logger();
   final storage = FlutterSecureStorage();
 
-  LoginScreen({super.key});
-
-  void login(context) async {
+  Future<void> login(context) async {
     final response = await ApiService.loginUser(
       usernameOrEmailController.text, // Can be either username or email
       passwordController.text,
@@ -23,6 +28,10 @@ class LoginScreen extends StatelessWidget {
 
     if (response != null && response.containsKey("tokens")) {
       logger.i("Login successful: $response");
+
+      // Save tokens
+      await StorageHelper.saveToken('access_token', response['tokens']['accessToken']);
+      await StorageHelper.saveToken('refresh_token', response['tokens']['refreshToken']);
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
@@ -45,11 +54,6 @@ class LoginScreen extends StatelessWidget {
         ),
       );
     }
-  }
-
-  void saveTokens(String accessToken, String refreshToken) async {
-    await storage.write(key: 'access_token', value: accessToken);
-    await storage.write(key: 'refresh_token', value: refreshToken);
   }
 
   @override
