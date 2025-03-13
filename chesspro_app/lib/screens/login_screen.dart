@@ -29,9 +29,19 @@ class LoginScreenState extends State<LoginScreen> {
     if (response != null && response.containsKey("tokens")) {
       logger.i("Login successful: $response");
 
-      // Save tokens
-      await StorageHelper.saveToken('access_token', response['tokens']['accessToken']);
-      await StorageHelper.saveToken('refresh_token', response['tokens']['refreshToken']);
+      // Save tokens and user info
+      await StorageHelper.saveToken(
+        'access_token',
+        response['tokens']['accessToken'],
+      );
+      await StorageHelper.saveToken(
+        'refresh_token',
+        response['tokens']['refreshToken'],
+      );
+      await StorageHelper.saveUserInfo(
+        response['user']['username'],
+        response['user']['email'],
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(

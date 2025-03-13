@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:logger/logger.dart';
 import 'package:chesspro_app/services/auth_service.dart';
 import 'screens/welcome_screen.dart';
 import 'screens/signup_screen.dart';
@@ -19,6 +20,7 @@ class MyApp extends StatefulWidget {
 
 class MyAppState extends State<MyApp> {
   String? _initialScreen;
+  static var logger = Logger();
 
   @override
   void initState() {
@@ -30,18 +32,30 @@ class MyAppState extends State<MyApp> {
     bool isLoggedIn = await AuthService.checkAndRefreshToken();
     setState(() {
       _initialScreen = isLoggedIn ? '/home' : '/welcome';
+      logger.i("initialScreen: $_initialScreen");
     });
   }
 
   @override
   Widget build(BuildContext context) {
+    logger.i("build initialScreen: $_initialScreen");
+
+    Widget initialScreenWidget;
+    if (_initialScreen == null) {
+      initialScreenWidget = Container(); // Show a blank screen while checking
+    } else if (_initialScreen == '/home') {
+      initialScreenWidget = HomeScreen();
+    } else {
+      initialScreenWidget = WelcomeScreen();
+    }
+
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       title: 'ChessPro',
       themeMode: ThemeMode.system,
       theme: AppThemes.lightTheme,
       darkTheme: AppThemes.darkTheme,
-      initialRoute: _initialScreen ?? '/welcome',
+      home: initialScreenWidget,
       routes: {
         '/welcome': (context) => WelcomeScreen(),
         '/signup': (context) => SignupScreen(),

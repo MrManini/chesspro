@@ -2,14 +2,31 @@ import 'package:flutter/material.dart';
 import 'package:chesspro_app/utils/storage_helper.dart';
 import 'package:chesspro_app/utils/styles.dart';
 
-class HomeScreen extends StatelessWidget {
-  const HomeScreen({super.key});
+class HomeScreen extends StatefulWidget {
+  @override
+  HomeScreenState createState() => HomeScreenState();
+}
+
+class HomeScreenState extends State<HomeScreen> {
+  String? username;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUsername();
+  }
+
+  Future<void> _loadUsername() async {
+    String? user = await StorageHelper.getUserUsername();
+    setState(() {
+      username = user;
+    });
+  }
 
   Future<void> _logout(BuildContext context) async {
     await StorageHelper.clearTokens();
     if (context.mounted) Navigator.pushReplacementNamed(context, '/w');
   }
-
 
   @override
   Widget build(BuildContext context) {
@@ -29,8 +46,17 @@ class HomeScreen extends StatelessWidget {
             icon: Icon(Icons.logout),
             onPressed: () => _logout(context),
           ),
-        ]
-      )
+          Text(
+            username != null ? "Welcome, $username!" : "Loading...",
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: AppStyles.getDefaultColor(context),
+            ),
+          ),
+        ],
+      ),
     );
   }
 }
