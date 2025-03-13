@@ -100,6 +100,7 @@ app.post("/login", async (req, res) => {
             return res.status(401).json({ error: "Invalid credentials." });
         }
         const user = userQuery.rows[0];
+        console.log(user);
         // Compare password
         const isMatch = await bcrypt.compare(password, user.password);
         if (!isMatch) {
@@ -123,7 +124,7 @@ app.post("/login", async (req, res) => {
 function generateToken(user, type) {
     let secret;
     let time;
-    if (type === refresh) {
+    if (type === 'refresh') {
         secret = process.env.JWT_REFRESH_SECRET;
         time = '60d';
     } else {
