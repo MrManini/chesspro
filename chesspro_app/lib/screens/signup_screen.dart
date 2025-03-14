@@ -70,11 +70,13 @@ class SignupScreenState extends State<SignupScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: true,
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
+            SizedBox(height: 10),
             Align(
               alignment: Alignment.topLeft,
               child: IconButton(
@@ -92,7 +94,7 @@ class SignupScreenState extends State<SignupScreen> {
                 },
               ),
             ),
-            Expanded(
+            SingleChildScrollView(
               child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
@@ -171,7 +173,6 @@ class SignupScreenState extends State<SignupScreen> {
                 ),
               ),
             ),
-            Spacer(),
           ],
         ),
       ),
