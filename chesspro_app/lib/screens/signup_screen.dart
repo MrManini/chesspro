@@ -1,22 +1,22 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:logger/logger.dart';
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:chesspro_app/widgets/password_text_field.dart';
 import 'package:chesspro_app/services/api_service.dart';
+import 'package:chesspro_app/utils/storage_helper.dart';
 
-class SignupScreen extends StatelessWidget {
+class SignupScreen extends StatefulWidget {
+  const SignupScreen({super.key});
+
+  @override
+  SignupScreenState createState() => SignupScreenState();
+}
+
+class SignupScreenState extends State<SignupScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   static var logger = Logger();
-  final storage = FlutterSecureStorage();
-
-  SignupScreen({super.key});
-
-  Future<void> saveLoginState(String token) async {
-    await storage.write(key: 'auth_token', value: token);
-  }
 
   void signUp(context) async {
     final response = await ApiService.signUpUser(
@@ -27,6 +27,21 @@ class SignupScreen extends StatelessWidget {
 
     if (response != null && !response.containsKey("error")) {
       logger.i("Sign-up successful: $response");
+      
+      // Save tokens and user info
+      await StorageHelper.saveToken(
+        'access_token',
+        response['tokens']['accessToken'],
+      );
+      await StorageHelper.saveToken(
+        'refresh_token',
+        response['tokens']['refreshToken'],
+      );
+      await StorageHelper.saveUserInfo(
+        response['user']['username'],
+        response['user']['email'],
+      );
+      
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('User created successfully! 🎉'),

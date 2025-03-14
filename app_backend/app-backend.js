@@ -71,13 +71,12 @@ app.post("/signup", async (req, res) => {
         const accessToken = generateToken(user, 'access');
         const refreshToken = generateToken(user, 'refresh');
 
-        res.json({ 
+        res.status(201).json({ 
             message: "Login successful!", 
-            token, 
             user: { uuid: user.uuid, username: user.username, email: user.email },
             tokens: {accessToken: accessToken, refreshToken: refreshToken},
         });
-        res.status(201).json({ message: "User created successfully!", user: newUser.rows[0] });
+
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error." });
@@ -110,11 +109,12 @@ app.post("/login", async (req, res) => {
         const accessToken = generateToken(user, 'access');
         const refreshToken = generateToken(user, 'refresh');
 
-        res.json({ 
+        res.status(201).json({ 
             message: "Login successful!", 
             user: { uuid: user.uuid, username: user.username, email: user.email },
             tokens: {accessToken: accessToken, refreshToken: refreshToken},
         });
+        
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: "Server error." });

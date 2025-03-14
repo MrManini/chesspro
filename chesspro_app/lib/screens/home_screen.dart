@@ -3,6 +3,8 @@ import 'package:chesspro_app/utils/storage_helper.dart';
 import 'package:chesspro_app/utils/styles.dart';
 
 class HomeScreen extends StatefulWidget {
+  const HomeScreen({super.key});
+
   @override
   HomeScreenState createState() => HomeScreenState();
 }

@@ -54,7 +54,7 @@ class ApiService {
         }),
       );
 
-      if (response.statusCode == 200) {
+      if (response.statusCode == 201) {
         return jsonDecode(response.body);
       } else {
         logger.e("Login Error ${response.statusCode}: ${response.body}");
