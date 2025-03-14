@@ -67,13 +67,15 @@ app.post("/signup", async (req, res) => {
             "INSERT INTO users (username, email, password) VALUES ($1, $2, $3) RETURNING uuid, username, email",
             [username, email, passwordHash]
         );
+        const user = newUser.rows[0];
+
         // Generate JWT tokens
-        const accessToken = generateToken(newUser, 'access');
-        const refreshToken = generateToken(newUser, 'refresh');
+        const accessToken = generateToken(user, 'access');
+        const refreshToken = generateToken(user, 'refresh');
 
         res.status(201).json({ 
             message: "Sign up succesful!", 
-            user: { uuid: newUser.uuid, username: newUser.username, email: newUser.email },
+            user: { uuid: user.uuid, username: user.username, email: user.email },
             tokens: {accessToken: accessToken, refreshToken: refreshToken},
         });
 
