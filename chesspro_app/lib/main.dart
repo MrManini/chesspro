@@ -32,14 +32,11 @@ class MyAppState extends State<MyApp> {
     bool isLoggedIn = await AuthService.checkAndRefreshToken();
     setState(() {
       _initialScreen = isLoggedIn ? '/home' : '/welcome';
-      logger.i("initialScreen: $_initialScreen");
     });
   }
 
   @override
   Widget build(BuildContext context) {
-    logger.i("build initialScreen: $_initialScreen");
-
     Widget initialScreenWidget;
     if (_initialScreen == null) {
       initialScreenWidget = Container(); // Show a blank screen while checking

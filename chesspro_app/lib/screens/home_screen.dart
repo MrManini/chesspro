@@ -27,7 +27,7 @@ class HomeScreenState extends State<HomeScreen> {
 
   Future<void> _logout(BuildContext context) async {
     await StorageHelper.clearTokens();
-    if (context.mounted) Navigator.pushReplacementNamed(context, '/w');
+    if (context.mounted) Navigator.pushReplacementNamed(context, '/welcome');
   }
 
   @override
