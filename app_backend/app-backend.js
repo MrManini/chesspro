@@ -68,12 +68,12 @@ app.post("/signup", async (req, res) => {
             [username, email, passwordHash]
         );
         // Generate JWT tokens
-        const accessToken = generateToken(user, 'access');
-        const refreshToken = generateToken(user, 'refresh');
+        const accessToken = generateToken(newUser, 'access');
+        const refreshToken = generateToken(newUser, 'refresh');
 
         res.status(201).json({ 
-            message: "Login successful!", 
-            user: { uuid: user.uuid, username: user.username, email: user.email },
+            message: "Sign up succesful!", 
+            user: { uuid: newUser.uuid, username: newUser.username, email: newUser.email },
             tokens: {accessToken: accessToken, refreshToken: refreshToken},
         });
 
