@@ -16,9 +16,22 @@ class SignupScreenState extends State<SignupScreen> {
   final TextEditingController usernameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController passwordConfirmController =
+      TextEditingController();
+  final ValueNotifier<bool> isPasswordVisibleNotifier = ValueNotifier(false);
   static var logger = Logger();
 
   void signUp(context) async {
+    if (passwordController.text != passwordConfirmController.text) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("❕ Passwords don't match."),
+          backgroundColor: Colors.red,
+        ),
+      );
+      return;
+    }
+
     final response = await ApiService.signUpUser(
       usernameController.text,
       emailController.text,
@@ -27,7 +40,7 @@ class SignupScreenState extends State<SignupScreen> {
 
     if (response != null && !response.containsKey("error")) {
       logger.i("Sign-up successful: $response");
-      
+
       // Save tokens and user info
       await StorageHelper.saveToken(
         'access_token',
@@ -41,7 +54,7 @@ class SignupScreenState extends State<SignupScreen> {
         response['user']['username'],
         response['user']['email'],
       );
-      
+
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('User created successfully! 🎉'),
@@ -136,6 +149,13 @@ class SignupScreenState extends State<SignupScreen> {
                     PasswordTextField(
                       controller: passwordController,
                       decoration: AppStyles.getTextFieldStyle(context),
+                      isPasswordVisibleNotifier: isPasswordVisibleNotifier,
+                    ),
+                    SizedBox(height: 10),
+                    ConfirmPasswordField(
+                      controller: passwordConfirmController,
+                      decoration: AppStyles.getTextFieldStyle(context),
+                      isPasswordVisibleNotifier: isPasswordVisibleNotifier,
                     ),
                     SizedBox(height: 30),
                     ElevatedButton(
