@@ -36,3 +36,6 @@ flutter:
   assets:
   - assets/logo-light.svg
   - assets/logo-dark.svg
+  - assets/mode-pvp.svg
+  - assets/mode-pvb.svg
+  - assets/mode-bvb.svg
