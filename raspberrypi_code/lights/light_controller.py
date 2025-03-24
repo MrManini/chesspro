@@ -44,14 +44,3 @@ def set_led(input_str):
 
     except (ValueError, IndexError):
         print("Invalid input. Use format 'cNN', e.g., 'g32' or '99' for all.")
-
-# Example loop for testing
-while True:
-    user_input = input("Enter command (e.g., g32, r15, 99 to fill, or blank to exit): ").strip()
-    if user_input == "":
-        break
-    set_led(user_input)
-
-print("Exiting...")
-pixels.fill((0, 0, 0))
-pixels.show()

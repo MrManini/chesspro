@@ -14,7 +14,7 @@ def piece_color(value):
     else:
         return "empty"
 
-def detect_changes():
+def detect_board_changes():
     global previous_values
     current_values = []
 
@@ -39,20 +39,4 @@ def detect_changes():
             appears.append(i)
 
     previous_values = current_values
-    return classify_move(leaves, appears)
-
-def classify_move(leaves, appears):
-    if len(leaves) == 1 and len(appears) == 1:
-        return f"Regular move from {leaves[0]} to {appears[0]}"
-
-    elif len(leaves) == 1 and len(appears) == 1 and previous_values[appears[0]] > 0:
-        return f"Capture move from {leaves[0]} to {appears[0]}"
-
-    elif len(leaves) == 2 and len(appears) == 2:
-        return f"Castling detected: {leaves} to {appears}"
-
-    elif len(leaves) == 2 and len(appears) == 1:
-        return f"En Passant detected from {leaves[0]} and {leaves[1]} to {appears[0]}"
-
-    else:
-        return "Unknown or illegal move detected"
+    return leaves, appears

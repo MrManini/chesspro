@@ -1,9 +1,8 @@
-from chess_engine import GameManager
-
 class CommandHandler:
-    def __init__(self, server):
+    def __init__(self, server, game_manager, board_manager):
         self.server = server
-        self.game_manager = GameManager()
+        self.game_manager = game_manager
+        self.board_manager = board_manager
         
     def handle_commands(self):
         while self.server.is_connected:
@@ -41,8 +40,7 @@ class CommandHandler:
                 break
 
             else:
-                self.server.send_game_event({'response': 'invalid command'})
-
+                self.server.send_game_event({'error': 'invalid command'})
 
     def send_game_event(self, event):
         self.server.send_game_event(event)
