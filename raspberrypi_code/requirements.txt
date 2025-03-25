@@ -11,6 +11,7 @@ beautifulsoup4==4.13.3
 binho-host-adapter==0.1.6
 certifi==2025.1.31
 charset-normalizer==3.4.1
+chess==1.11.2
 docopt==0.6.2
 idna==3.10
 Js2Py==0.74

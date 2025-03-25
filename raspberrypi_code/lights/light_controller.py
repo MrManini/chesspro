@@ -1,3 +1,4 @@
+from lights.lights_order import conversion_to_number
 import board
 import neopixel
 
@@ -23,7 +24,7 @@ def set_led(input_str):
     try:
         # Extract values from input
         color_char = input_str[0] if input_str[0].isalpha() else None
-        led_index = int(input_str[1:])
+        led_index = conversion_to_number(input_str[1:])
         
         # Validate index
         if led_index < 0 or (led_index > 63 and led_index != 99):

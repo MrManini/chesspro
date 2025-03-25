@@ -1,8 +1,9 @@
 from sensor_reader import read_adc, set_mux_channel
+from sensors_order import sensors_order
 import time
 
 # Initialize previous sensor values
-previous_values = [0] * 64
+previous_values = [2.5] * 64
 LOWER_THRESHOLD = 341
 UPPER_THRESHOLD = 683
 
@@ -34,9 +35,9 @@ def detect_board_changes():
         curr = current_values[i]
 
         if piece_color(prev) != "empty" and piece_color(curr) == "empty":
-            leaves.append(i)
+            leaves.append(sensors_order[i])
         elif piece_color(prev) == "empty" and piece_color(curr) != "empty":
-            appears.append(i)
+            appears.append(sensors_order[i])
 
     previous_values = current_values
     return leaves, appears
