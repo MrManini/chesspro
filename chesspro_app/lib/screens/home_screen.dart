@@ -70,6 +70,23 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    Align(
+                      alignment: Alignment.topRight,
+                      child: PopupMenuButton<String>(
+                        icon: Icon(Icons.settings),
+                        onSelected: (value) {
+                          if (value == 'logout') {
+                            _logout(context);
+                          }
+                        },
+                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+                          PopupMenuItem<String>(
+                            value: 'logout',
+                            child: Text('Logout'),
+                          ),
+                        ],
+                      ),
+                    ),
                     SvgPicture.asset(
                       isDarkMode ? 'assets/logo-dark.svg' : 'assets/logo-light.svg',
                       width: screenWidth * 0.6,
