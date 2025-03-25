@@ -35,8 +35,5 @@ flutter:
   uses-material-design: true
 
   assets:
-  - assets/logo-light.svg
-  - assets/logo-dark.svg
-  - assets/mode-pvp.svg
-  - assets/mode-pvb.svg
-  - assets/mode-bvb.svg
+  - assets/
+  - assets/pieces/

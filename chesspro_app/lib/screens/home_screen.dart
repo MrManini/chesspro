@@ -10,7 +10,8 @@ class HomeScreen extends StatefulWidget {
   HomeScreenState createState() => HomeScreenState();
 }
 
-class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMixin {
+class HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
   String? username;
   bool showButtons = false;
   late AnimationController _controller;
@@ -62,10 +63,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
         padding: const EdgeInsets.all(20),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: [            
+          children: [
             SizedBox(height: 10),
             SingleChildScrollView(
-              child: Center( 
+              child: Center(
                 child: Column(
                   mainAxisSize: MainAxisSize.min,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -79,23 +80,29 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                             _logout(context);
                           }
                         },
-                        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-                          PopupMenuItem<String>(
-                            value: 'logout',
-                            child: Text('Logout'),
-                          ),
-                        ],
+                        itemBuilder:
+                            (BuildContext context) => <PopupMenuEntry<String>>[
+                              PopupMenuItem<String>(
+                                value: 'logout',
+                                child: Text('Logout'),
+                              ),
+                            ],
                       ),
                     ),
                     SvgPicture.asset(
-                      isDarkMode ? 'assets/logo-dark.svg' : 'assets/logo-light.svg',
+                      isDarkMode
+                          ? 'assets/logo-dark.svg'
+                          : 'assets/logo-light.svg',
                       width: screenWidth * 0.6,
                     ),
                     SizedBox(height: 30),
                     ElevatedButton(
                       onPressed: toggleButtons,
                       style: AppStyles.getPrimaryButtonStyle(context),
-                      child: Text("Create Game", style: TextStyle(fontSize: 20)),
+                      child: Text(
+                        "Create Game",
+                        style: TextStyle(fontSize: 20),
+                      ),
                     ),
                     SizedBox(height: 10),
                     SizeTransition(
@@ -108,63 +115,84 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                             children: [
                               SizedBox(
                                 width: 120,
-                                child:  ElevatedButton(
-                                    onPressed: () {},
-                                    style: AppStyles.getSecondaryButtonStyle(context),
-                                    child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/mode-pvp.svg',
-                                            width: 100,
-                                            colorFilter: null,
-                                          ),
-                                          const SizedBox(height: 8),
-                                          const Text('Player vs Player'),
-                                        ]
-                                    ),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/chess',
+                                    );
+                                  },
+                                  style: AppStyles.getSecondaryButtonStyle(
+                                    context,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/mode-pvp.svg',
+                                        width: 100,
+                                        colorFilter: null,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text('Player vs Player'),
+                                    ],
+                                  ),
                                 ),
                               ),
                               SizedBox(
                                 width: 120,
-                                child:  ElevatedButton(
-                                    onPressed: () {},
-                                    style: AppStyles.getSecondaryButtonStyle(context),
-                                    child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/mode-pvb.svg',
-                                            width: 100,
-                                          ),
-                                          const SizedBox(height: 8),
-                                          const Text('Player vs Bot'),
-                                        ]
-                                    ),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/chess',
+                                    );
+                                  },
+                                  style: AppStyles.getSecondaryButtonStyle(
+                                    context,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/mode-pvb.svg',
+                                        width: 100,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text('Player vs Bot'),
+                                    ],
+                                  ),
                                 ),
                               ),
                               SizedBox(
                                 width: 120,
-                                child:  ElevatedButton(
-                                    onPressed: () {},
-                                    style: AppStyles.getSecondaryButtonStyle(context),
-                                    child: Column(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/mode-bvb.svg',
-                                            width: 100,
-                                          ),
-                                          const SizedBox(height: 8),
-                                          const Text('Bot vs Bot'),
-                                        ]
-                                    ),
+                                child: ElevatedButton(
+                                  onPressed: () {
+                                    Navigator.pushReplacementNamed(
+                                      context,
+                                      '/chess',
+                                    );
+                                  },
+                                  style: AppStyles.getSecondaryButtonStyle(
+                                    context,
+                                  ),
+                                  child: Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      SvgPicture.asset(
+                                        'assets/mode-bvb.svg',
+                                        width: 100,
+                                      ),
+                                      const SizedBox(height: 8),
+                                      const Text('Bot vs Bot'),
+                                    ],
+                                  ),
                                 ),
                               ),
                             ],
                           ),
                           SizedBox(height: 10),
-                        ]
+                        ],
                       ),
                     ),
                     ElevatedButton(
@@ -172,10 +200,10 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
                       style: AppStyles.getSecondaryButtonStyle(context),
                       child: Text("Join Game", style: TextStyle(fontSize: 20)),
                     ),
-                  ]
-                )
-              )
-            )
+                  ],
+                ),
+              ),
+            ),
           ],
         ),
       ),
@@ -187,5 +215,4 @@ class HomeScreenState extends State<HomeScreen> with SingleTickerProviderStateMi
     _controller.dispose();
     super.dispose();
   }
-
 }
