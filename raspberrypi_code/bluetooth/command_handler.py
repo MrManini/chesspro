@@ -28,8 +28,9 @@ class CommandHandler:
 
             elif action == 'move':
                 move = command['move']
-                if self.game_manager.move(move):
-                    self.server.send_game_event({'response': 'move successful'})
+                if self.game_manager.validate_move(move):
+                    self.board_manager.update_remote_move(move)
+                    self.server.send_game_event({'response': 'move is valid'})
                 else:
                     self.server.send_game_event({'error': 'illegal move'})
 
