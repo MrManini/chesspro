@@ -1,3 +1,4 @@
+import 'package:chesspro_app/utils/styles.dart';
 import 'package:flutter/material.dart';
 
 void main() {
@@ -17,6 +18,7 @@ class ChessScreenState extends State<ChessScreen> {
   Offset? grabbedPosition;
   String? grabbedPiece;
   String? selectedPiece;
+  bool isFlipped = false;
 
   Map<String, Offset> piecePositions = {
     'white_pawn1': Offset(0, 6),
@@ -82,12 +84,17 @@ class ChessScreenState extends State<ChessScreen> {
                     child: AspectRatio(
                       aspectRatio: 1,
                       child: GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 8,
                         ),
                         itemBuilder: (context, index) {
                           int x = index % 8;
                           int y = index ~/ 8;
+                          if (isFlipped) {
+                            x = 7 - x;
+                            y = 7 - y;
+                          }
                           bool isLightSquare = (x + y) % 2 == 0;
                           return GestureDetector(
                             onTap: () => onSquareTapped(x, y),
@@ -117,12 +124,17 @@ class ChessScreenState extends State<ChessScreen> {
                     child: AspectRatio(
                       aspectRatio: 1,
                       child: GridView.builder(
+                        physics: const NeverScrollableScrollPhysics(),
                         gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                           crossAxisCount: 8,
                         ),
                         itemBuilder: (context, index) {
                           int x = index % 8;
                           int y = index ~/ 8;
+                          if (isFlipped) {
+                            x = 7 - x;
+                            y = 7 - y;
+                          }
                           Offset position = Offset(x.toDouble(), y.toDouble());
                           
                           Widget pieceWidget = Container();
@@ -167,6 +179,15 @@ class ChessScreenState extends State<ChessScreen> {
             ),
 
             // Bottom elements
+            ElevatedButton(
+              onPressed: () {
+                setState(() {
+                  isFlipped = !isFlipped;
+                });
+              },
+              style: AppStyles.getPrimaryButtonStyle(context),
+              child: const Text('Flip Board'),
+            ),
           ],
         ),
       ),
