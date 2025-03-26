@@ -53,10 +53,10 @@ class ChessScreenState extends State<ChessScreen> {
     'black_rook2': Offset(7, 0),
 
     'white_queen': Offset(3, 7),
-    'black_queen': Offset(3, 0),  
+    'black_queen': Offset(3, 0),
 
     'white_king': Offset(4, 7),
-    'black_king': Offset(4, 0),   
+    'black_king': Offset(4, 0),
   };
 
   @override
@@ -82,10 +82,9 @@ class ChessScreenState extends State<ChessScreen> {
                     child: AspectRatio(
                       aspectRatio: 1,
                       child: GridView.builder(
-                        gridDelegate:
-                            SliverGridDelegateWithFixedCrossAxisCount(
-                              crossAxisCount: 8,
-                            ),
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 8,
+                        ),
                         itemBuilder: (context, index) {
                           int x = index % 8;
                           int y = index ~/ 8;
@@ -93,11 +92,18 @@ class ChessScreenState extends State<ChessScreen> {
                           return GestureDetector(
                             onTap: () => onSquareTapped(x, y),
                             child: Container(
-                              color: isLightSquare ? Color(0xffEEEEE9) : Color.fromARGB(255, 43, 43, 44),
-                              child: selectedPiece != null &&
-                                      piecePositions[selectedPiece] == Offset(x.toDouble(), y.toDouble())
-                                  ? Container(color: Color(0x800000ff)) // Highlight on selection
-                                  : null,
+                              color:
+                                  isLightSquare
+                                      ? Color(0xffEEEEE9)
+                                      : Color.fromARGB(255, 43, 43, 44),
+                              child:
+                                  selectedPiece != null &&
+                                          piecePositions[selectedPiece] ==
+                                              Offset(x.toDouble(), y.toDouble())
+                                      ? Container(
+                                        color: Color(0x800000ff),
+                                      ) // Highlight on selection
+                                      : null,
                             ),
                           );
                         },
@@ -107,59 +113,55 @@ class ChessScreenState extends State<ChessScreen> {
                   ),
 
                   // Pieces
-                  ...piecePositions.entries.map((entry) {
-                    bool isGrabbed = entry.key == grabbedPiece;
-                    Offset displayPosition = isGrabbed && grabbedPosition != null
-                        ? grabbedPosition!
-                        : Offset(entry.value.dx * squareSize, entry.value.dy * squareSize);
-
-                    return Positioned(
-                      left: displayPosition.dx,
-                      top: displayPosition.dy,
-                      child: GestureDetector(
-                        onTap: () {
-                          setState(() {
-                            selectedPiece = entry.key;
-                          });
-                        },
-                        onPanStart: (_) {
-                          setState(() {
-                            grabbedPiece = entry.key;
-                          });
-                        },
-                        onPanUpdate: (details) {
-                          setState(() {
-                            grabbedPosition = Offset(
-                              displayPosition.dx + details.delta.dx,
-                              displayPosition.dy + details.delta.dy,
-                            );
-                          });
-                        },
-                        onPanEnd: (_) {
-                          setState(() {
-                            if (grabbedPosition != null) {
-                              // Snap to nearest square
-                              double x = (grabbedPosition!.dx / squareSize).roundToDouble();
-                              double y = (grabbedPosition!.dy / squareSize).roundToDouble();
-                              piecePositions[entry.key] = Offset(
-                                x.clamp(0.0, 7.0),
-                                y.clamp(0.0, 7.0),
-                              );
-                            }
-                            grabbedPiece = null;
-                            grabbedPosition = null;
-                          });
-                        },
-                        child: SizedBox(
-                          width: squareSize,
-                          height: squareSize,
-                          child: Image.asset(getPieceImage(entry.key)),
+                  Center(
+                    child: AspectRatio(
+                      aspectRatio: 1,
+                      child: GridView.builder(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: 8,
                         ),
+                        itemBuilder: (context, index) {
+                          int x = index % 8;
+                          int y = index ~/ 8;
+                          Offset position = Offset(x.toDouble(), y.toDouble());
+                          
+                          Widget pieceWidget = Container();
+                          for (var entry in piecePositions.entries) {
+                            if (entry.value == position) {
+                              pieceWidget = Draggable<String>(
+                                data: entry.key,
+                                feedback: SizedBox(
+                                  width: squareSize,
+                                  height: squareSize,
+                                  child: Image.asset(getPieceImage(entry.key)),
+                                ),
+                                childWhenDragging: Container(),
+                                child: SizedBox(
+                                  width: squareSize,
+                                  height: squareSize,
+                                  child: Image.asset(getPieceImage(entry.key)),
+                                ),
+                              );
+                              break;
+                            }
+                          }
+                          
+                          return DragTarget<String>(
+                            onAcceptWithDetails: (piece) {
+                              setState(() {
+                                piecePositions[piece.data] = position;
+                              });
+                            },
+                            builder: (context, candidateData, rejectedData) => Container(
+                              color: Colors.transparent,
+                              child: pieceWidget,
+                            ),
+                          );
+                        },
+                        itemCount: 64,
                       ),
-                    );
-                  }),
-                
-                
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -183,17 +185,29 @@ class ChessScreenState extends State<ChessScreen> {
 
   String getPieceImage(String pieceName) {
     if (pieceName.contains('pawn')) {
-      return pieceName.contains('white') ? 'assets/pieces/wp.png' : 'assets/pieces/bp.png';
+      return pieceName.contains('white')
+          ? 'assets/pieces/wp.png'
+          : 'assets/pieces/bp.png';
     } else if (pieceName.contains('knight')) {
-      return pieceName.contains('white') ? 'assets/pieces/wn.png' : 'assets/pieces/bn.png';
+      return pieceName.contains('white')
+          ? 'assets/pieces/wn.png'
+          : 'assets/pieces/bn.png';
     } else if (pieceName.contains('bishop')) {
-      return pieceName.contains('white') ? 'assets/pieces/wb.png' : 'assets/pieces/bb.png';
+      return pieceName.contains('white')
+          ? 'assets/pieces/wb.png'
+          : 'assets/pieces/bb.png';
     } else if (pieceName.contains('rook')) {
-      return pieceName.contains('white') ? 'assets/pieces/wr.png' : 'assets/pieces/br.png';
+      return pieceName.contains('white')
+          ? 'assets/pieces/wr.png'
+          : 'assets/pieces/br.png';
     } else if (pieceName.contains('queen')) {
-      return pieceName.contains('white') ? 'assets/pieces/wq.png' : 'assets/pieces/bq.png';
+      return pieceName.contains('white')
+          ? 'assets/pieces/wq.png'
+          : 'assets/pieces/bq.png';
     } else if (pieceName.contains('king')) {
-      return pieceName.contains('white') ? 'assets/pieces/wk.png' : 'assets/pieces/bk.png';
+      return pieceName.contains('white')
+          ? 'assets/pieces/wk.png'
+          : 'assets/pieces/bk.png';
     }
     return 'assets/pieces/wp.png'; // Fallback image
   }
