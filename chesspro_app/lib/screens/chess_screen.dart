@@ -233,6 +233,11 @@ class ChessScreenState extends State<ChessScreen> {
       if (selectedPiece == null) {
         // First tap - select the piece if there is one
         if (pieceAtPosition != null) {
+          bool isWhiteTurn = game.turn == chess.Color.WHITE;
+          bool isWhitePiece = pieceAtPosition.contains('white');
+          if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
+            return; // Exit early if it's not the player's turn
+          }
           selectedPiece = pieceAtPosition;
         }
       } else {
