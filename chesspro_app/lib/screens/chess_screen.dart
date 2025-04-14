@@ -22,6 +22,7 @@ class ChessScreenState extends State<ChessScreen> {
   bool isFlipped = false;
   chess.Chess game = chess.Chess();
   static var logger = Logger();
+  bool isGameOver = false;
 
   Map<String, Offset> piecePositions = {
     'white_pawn1': Offset(0, 6),
@@ -150,12 +151,7 @@ class ChessScreenState extends State<ChessScreen> {
 
                           return DragTarget<String>(
                             onAcceptWithDetails: (details) {
-                              setState(() {
-                                // Move the dragged piece to this position
-                                piecePositions[details.data] = position;
-                                // Clear selection when using drag-and-drop
-                                selectedPiece = null;
-                              });
+                              onDrag(details, position);
                             },
                             builder: (context, candidateData, rejectedData) {
                               return GestureDetector(
@@ -177,6 +173,9 @@ class ChessScreenState extends State<ChessScreen> {
                                             ),
                                             childWhenDragging: Container(),
                                             onDragStarted: () {
+                                              if (isGameOver) {
+                                                return;
+                                              }
                                               setState(() {
                                                 selectedPiece = pieceAtPosition;
                                               });
@@ -219,7 +218,31 @@ class ChessScreenState extends State<ChessScreen> {
     );
   }
 
+  void onDrag(details, position) {
+    if (isGameOver) return; // Prevent dragging if the game is over
+
+    String from = _convertToChessNotation(piecePositions[details.data]!);
+    String to = _convertToChessNotation(position);
+
+    if (game.move({'from': from, 'to': to})) {
+      // Valid move
+      setState(() {
+        piecePositions[details.data] = position;
+        selectedPiece = null;
+      });
+
+      // Check if the game has ended
+      endGame();
+    } else {
+      // Invalid move
+      selectedPiece = null;
+    }
+  }
+
   void onSquareTapped(int x, int y) {
+    if (isGameOver) {
+      return;
+    }
     setState(() {
       // Check if there's a piece at the tapped position
       String? pieceAtPosition;
@@ -235,7 +258,8 @@ class ChessScreenState extends State<ChessScreen> {
         if (pieceAtPosition != null) {
           bool isWhiteTurn = game.turn == chess.Color.WHITE;
           bool isWhitePiece = pieceAtPosition.contains('white');
-          if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
+          if ((isWhiteTurn && !isWhitePiece) ||
+              (!isWhiteTurn && isWhitePiece)) {
             return; // Exit early if it's not the player's turn
           }
           selectedPiece = pieceAtPosition;
@@ -244,10 +268,8 @@ class ChessScreenState extends State<ChessScreen> {
         // Second tap - move the selected piece or select a different piece
         String from = _convertToChessNotation(piecePositions[selectedPiece!]!);
         String to = _convertToChessNotation(Offset(x.toDouble(), y.toDouble()));
-        
         if (game.move({'from': from, 'to': to})) {
           // Valid move
-          
           piecePositions[selectedPiece!] = Offset(x.toDouble(), y.toDouble());
           selectedPiece = null;
         } else {
@@ -255,7 +277,45 @@ class ChessScreenState extends State<ChessScreen> {
           selectedPiece = null;
         }
       }
+
+      endGame();
     });
+  }
+
+  void endGame() {
+    // Check if the game has ended
+    if (game.in_checkmate) {
+      _showGameEndDialog(
+        'Checkmate! ${game.turn == chess.Color.WHITE ? 'Black' : 'White'} wins!',
+      );
+    } else if (game.in_stalemate) {
+      _showGameEndDialog('Stalemate! The game is a draw.');
+    } else if (game.in_draw) {
+      _showGameEndDialog('Draw! The game has ended in a draw.');
+    } else if (game.in_threefold_repetition) {
+      _showGameEndDialog('Draw! Threefold repetition occurred.');
+    }
+  }
+
+  void _showGameEndDialog(String message) {
+    isGameOver = true;
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: const Text('Game Over'),
+          content: Text(message),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+              child: const Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 
   String getPieceImage(String pieceName) {
