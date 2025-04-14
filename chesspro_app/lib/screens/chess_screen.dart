@@ -151,7 +151,7 @@ class ChessScreenState extends State<ChessScreen> {
 
                           return DragTarget<String>(
                             onAcceptWithDetails: (details) {
-                              onDrag(details, position);
+                              onDragAccept(details, position);
                             },
                             builder: (context, candidateData, rejectedData) {
                               return GestureDetector(
@@ -160,9 +160,20 @@ class ChessScreenState extends State<ChessScreen> {
                                 },
                                 child: Container(
                                   color: Colors.transparent,
-                                  child:
-                                      pieceAtPosition != null
-                                          ? Draggable<String>(
+                                  child: pieceAtPosition != null
+                                    ? (isGameOver ||
+                                            ((game.turn == chess.Color.WHITE &&
+                                                    !pieceAtPosition.contains('white')) ||
+                                                (game.turn == chess.Color.BLACK &&
+                                                    !pieceAtPosition.contains('black')))
+                                        ? SizedBox(
+                                            width: squareSize,
+                                            height: squareSize,
+                                            child: Image.asset(
+                                              getPieceImage(pieceAtPosition),
+                                            ),
+                                          )
+                                        : Draggable<String>(
                                             data: pieceAtPosition,
                                             feedback: SizedBox(
                                               width: squareSize,
@@ -173,12 +184,7 @@ class ChessScreenState extends State<ChessScreen> {
                                             ),
                                             childWhenDragging: Container(),
                                             onDragStarted: () {
-                                              if (isGameOver) {
-                                                return;
-                                              }
-                                              setState(() {
-                                                selectedPiece = pieceAtPosition;
-                                              });
+                                              onDragStarted(pieceAtPosition);
                                             },
                                             child: SizedBox(
                                               width: squareSize,
@@ -187,8 +193,8 @@ class ChessScreenState extends State<ChessScreen> {
                                                 getPieceImage(pieceAtPosition),
                                               ),
                                             ),
-                                          )
-                                          : null,
+                                          ))
+                                  : null,
                                 ),
                               );
                             },
@@ -218,7 +224,23 @@ class ChessScreenState extends State<ChessScreen> {
     );
   }
 
-  void onDrag(details, position) {
+  void onDragStarted(pieceAtPosition) {
+    if (isGameOver) {
+      return;
+    }
+    bool isWhiteTurn = game.turn == chess.Color.WHITE;
+    bool isWhitePiece = pieceAtPosition != null && pieceAtPosition.contains('white');
+    if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
+      logger.i('Dragging disabled: Not your turn');
+      return;
+    }
+    setState(() {
+      selectedPiece = pieceAtPosition;
+    });
+  }
+
+
+  void onDragAccept(details, position) {
     if (isGameOver) return; // Prevent dragging if the game is over
 
     String from = _convertToChessNotation(piecePositions[details.data]!);
