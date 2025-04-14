@@ -1,5 +1,7 @@
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:flutter/material.dart';
+import 'package:chess/chess.dart' as chess;
+import 'package:logger/logger.dart';
 
 void main() {
   runApp(MaterialApp(home: ChessScreen()));
@@ -18,6 +20,8 @@ class ChessScreenState extends State<ChessScreen> {
   String? grabbedPiece;
   String? selectedPiece;
   bool isFlipped = false;
+  chess.Chess game = chess.Chess();
+  static var logger = Logger();
 
   Map<String, Offset> piecePositions = {
     'white_pawn1': Offset(0, 6),
@@ -98,16 +102,18 @@ class ChessScreenState extends State<ChessScreen> {
                           return GestureDetector(
                             onTap: () => onSquareTapped(x, y),
                             child: Container(
-                              color: isLightSquare
-                                  ? Color(0xffEEEEE9)
-                                  : Color.fromARGB(255, 43, 43, 44),
-                              child: selectedPiece != null &&
-                                      piecePositions[selectedPiece] ==
-                                          Offset(x.toDouble(), y.toDouble())
-                                  ? Container(
-                                      color: Color(0x800000ff),
-                                    ) // Highlight on selection
-                                  : null,
+                              color:
+                                  isLightSquare
+                                      ? Color(0xffEEEEE9)
+                                      : Color.fromARGB(255, 43, 43, 44),
+                              child:
+                                  selectedPiece != null &&
+                                          piecePositions[selectedPiece] ==
+                                              Offset(x.toDouble(), y.toDouble())
+                                      ? Container(
+                                        color: Color(0x800000ff),
+                                      ) // Highlight on selection
+                                      : null,
                             ),
                           );
                         },
@@ -133,7 +139,7 @@ class ChessScreenState extends State<ChessScreen> {
                             y = 7 - y;
                           }
                           Offset position = Offset(x.toDouble(), y.toDouble());
-                          
+
                           String? pieceAtPosition;
                           for (var entry in piecePositions.entries) {
                             if (entry.value == position) {
@@ -141,7 +147,7 @@ class ChessScreenState extends State<ChessScreen> {
                               break;
                             }
                           }
-                          
+
                           return DragTarget<String>(
                             onAcceptWithDetails: (details) {
                               setState(() {
@@ -154,46 +160,37 @@ class ChessScreenState extends State<ChessScreen> {
                             builder: (context, candidateData, rejectedData) {
                               return GestureDetector(
                                 onTap: () {
-                                  if (pieceAtPosition != null) {
-                                    setState(() {
-                                      if (selectedPiece == pieceAtPosition) {
-                                        selectedPiece = null; // Deselect if same piece
-                                      } else {
-                                        selectedPiece = pieceAtPosition; // Select new piece
-                                      }
-                                    });
-                                  } else if (selectedPiece != null) {
-                                    // Move selected piece to empty square
-                                    setState(() {
-                                      piecePositions[selectedPiece!] = position;
-                                      selectedPiece = null;
-                                    });
-                                  }
+                                  onSquareTapped(x, y);
                                 },
                                 child: Container(
                                   color: Colors.transparent,
-                                  child: pieceAtPosition != null
-                                      ? Draggable<String>(
-                                          data: pieceAtPosition,
-                                          feedback: SizedBox(
-                                            width: squareSize,
-                                            height: squareSize,
-                                            child: Image.asset(getPieceImage(pieceAtPosition))  
-                                          ),
-                                          childWhenDragging: Container(),
-                                          onDragStarted: () {
-                                            setState(() {
-                                              selectedPiece = pieceAtPosition;
-                                            });
-                                          },
-                                          child: SizedBox(
-                                            width: squareSize,
-                                            height: squareSize,
-                                            child: Image.asset(getPieceImage(pieceAtPosition)),
+                                  child:
+                                      pieceAtPosition != null
+                                          ? Draggable<String>(
+                                            data: pieceAtPosition,
+                                            feedback: SizedBox(
+                                              width: squareSize,
+                                              height: squareSize,
+                                              child: Image.asset(
+                                                getPieceImage(pieceAtPosition),
+                                              ),
+                                            ),
+                                            childWhenDragging: Container(),
+                                            onDragStarted: () {
+                                              setState(() {
+                                                selectedPiece = pieceAtPosition;
+                                              });
+                                            },
+                                            child: SizedBox(
+                                              width: squareSize,
+                                              height: squareSize,
+                                              child: Image.asset(
+                                                getPieceImage(pieceAtPosition),
+                                              ),
+                                            ),
                                           )
-                                      )
-                                      : null,
-                                )
+                                          : null,
+                                ),
                               );
                             },
                           );
@@ -240,12 +237,16 @@ class ChessScreenState extends State<ChessScreen> {
         }
       } else {
         // Second tap - move the selected piece or select a different piece
-        if (pieceAtPosition != null && pieceAtPosition != selectedPiece) {
-          // Select a different piece
-          selectedPiece = pieceAtPosition;
-        } else {
-          // Move the selected piece to this position
+        String from = _convertToChessNotation(piecePositions[selectedPiece!]!);
+        String to = _convertToChessNotation(Offset(x.toDouble(), y.toDouble()));
+        
+        if (game.move({'from': from, 'to': to})) {
+          // Valid move
+          
           piecePositions[selectedPiece!] = Offset(x.toDouble(), y.toDouble());
+          selectedPiece = null;
+        } else {
+          // Invalid move
           selectedPiece = null;
         }
       }
@@ -279,5 +280,12 @@ class ChessScreenState extends State<ChessScreen> {
           : 'assets/pieces/bk.png';
     }
     return 'assets/pieces/wp.png'; // Fallback image
+  }
+
+  String _convertToChessNotation(Offset position) {
+    // Convert board coordinates to chess notation (e.g., (0, 6) -> "a2")
+    String file = String.fromCharCode(97 + position.dx.toInt());
+    String rank = (8 - position.dy.toInt()).toString();
+    return '$file$rank';
   }
 }
