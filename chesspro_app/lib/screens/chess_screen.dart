@@ -160,41 +160,62 @@ class ChessScreenState extends State<ChessScreen> {
                                 },
                                 child: Container(
                                   color: Colors.transparent,
-                                  child: pieceAtPosition != null
-                                    ? (isGameOver ||
-                                            ((game.turn == chess.Color.WHITE &&
-                                                    !pieceAtPosition.contains('white')) ||
-                                                (game.turn == chess.Color.BLACK &&
-                                                    !pieceAtPosition.contains('black')))
-                                        ? SizedBox(
-                                            width: squareSize,
-                                            height: squareSize,
-                                            child: Image.asset(
-                                              getPieceImage(pieceAtPosition),
-                                            ),
-                                          )
-                                        : Draggable<String>(
-                                            data: pieceAtPosition,
-                                            feedback: SizedBox(
-                                              width: squareSize,
-                                              height: squareSize,
-                                              child: Image.asset(
-                                                getPieceImage(pieceAtPosition),
-                                              ),
-                                            ),
-                                            childWhenDragging: Container(),
-                                            onDragStarted: () {
-                                              onDragStarted(pieceAtPosition);
-                                            },
-                                            child: SizedBox(
-                                              width: squareSize,
-                                              height: squareSize,
-                                              child: Image.asset(
-                                                getPieceImage(pieceAtPosition),
-                                              ),
-                                            ),
-                                          ))
-                                  : null,
+                                  child:
+                                      pieceAtPosition != null
+                                          ? (isGameOver ||
+                                                  ((game.turn ==
+                                                              chess
+                                                                  .Color
+                                                                  .WHITE &&
+                                                          !pieceAtPosition
+                                                              .contains(
+                                                                'white',
+                                                              )) ||
+                                                      (game.turn ==
+                                                              chess
+                                                                  .Color
+                                                                  .BLACK &&
+                                                          !pieceAtPosition
+                                                              .contains(
+                                                                'black',
+                                                              )))
+                                              ? SizedBox(
+                                                width: squareSize,
+                                                height: squareSize,
+                                                child: Image.asset(
+                                                  getPieceImage(
+                                                    pieceAtPosition,
+                                                  ),
+                                                ),
+                                              )
+                                              : Draggable<String>(
+                                                data: pieceAtPosition,
+                                                feedback: SizedBox(
+                                                  width: squareSize,
+                                                  height: squareSize,
+                                                  child: Image.asset(
+                                                    getPieceImage(
+                                                      pieceAtPosition,
+                                                    ),
+                                                  ),
+                                                ),
+                                                childWhenDragging: Container(),
+                                                onDragStarted: () {
+                                                  onDragStarted(
+                                                    pieceAtPosition,
+                                                  );
+                                                },
+                                                child: SizedBox(
+                                                  width: squareSize,
+                                                  height: squareSize,
+                                                  child: Image.asset(
+                                                    getPieceImage(
+                                                      pieceAtPosition,
+                                                    ),
+                                                  ),
+                                                ),
+                                              ))
+                                          : null,
                                 ),
                               );
                             },
@@ -209,6 +230,7 @@ class ChessScreenState extends State<ChessScreen> {
             ),
 
             // Bottom elements
+            SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
                 setState(() {
@@ -229,7 +251,8 @@ class ChessScreenState extends State<ChessScreen> {
       return;
     }
     bool isWhiteTurn = game.turn == chess.Color.WHITE;
-    bool isWhitePiece = pieceAtPosition != null && pieceAtPosition.contains('white');
+    bool isWhitePiece =
+        pieceAtPosition != null && pieceAtPosition.contains('white');
     if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
       logger.i('Dragging disabled: Not your turn');
       return;
@@ -238,7 +261,6 @@ class ChessScreenState extends State<ChessScreen> {
       selectedPiece = pieceAtPosition;
     });
   }
-
 
   void onDragAccept(details, position) {
     if (isGameOver) return; // Prevent dragging if the game is over
