@@ -164,7 +164,7 @@ class HomeScreenState extends State<HomeScreen>
                                   ),
                                 ),
                               ),
-                              SizedBox(
+/*                               SizedBox(
                                 width: 120,
                                 child: ElevatedButton(
                                   onPressed: () {
@@ -188,7 +188,7 @@ class HomeScreenState extends State<HomeScreen>
                                     ],
                                   ),
                                 ),
-                              ),
+                              ), */
                             ],
                           ),
                           SizedBox(height: 10),
