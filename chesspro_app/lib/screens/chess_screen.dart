@@ -271,6 +271,18 @@ class ChessScreenState extends State<ChessScreen> {
     if (game.move({'from': from, 'to': to})) {
       // Valid move
       setState(() {
+
+        // Remove enemy piece if present
+        String? pieceAtPosition;
+        for (var entry in piecePositions.entries) {
+          if (entry.value == position) {
+            pieceAtPosition = entry.key;
+            break;
+          }
+        }
+        if (pieceAtPosition != null) {
+          piecePositions.remove(pieceAtPosition);
+        }
         piecePositions[details.data] = position;
         selectedPiece = null;
       });
@@ -314,6 +326,11 @@ class ChessScreenState extends State<ChessScreen> {
         String to = _convertToChessNotation(Offset(x.toDouble(), y.toDouble()));
         if (game.move({'from': from, 'to': to})) {
           // Valid move
+          // Remove enemy piece if present
+          if (pieceAtPosition != null) {
+            piecePositions.remove(pieceAtPosition);
+          }
+          // Move the selected piece
           piecePositions[selectedPiece!] = Offset(x.toDouble(), y.toDouble());
           selectedPiece = null;
         } else {
