@@ -271,7 +271,6 @@ class ChessScreenState extends State<ChessScreen> {
     if (game.move({'from': from, 'to': to})) {
       // Valid move
       setState(() {
-
         // Remove enemy piece if present
         String? pieceAtPosition;
         for (var entry in piecePositions.entries) {
@@ -283,6 +282,29 @@ class ChessScreenState extends State<ChessScreen> {
         if (pieceAtPosition != null) {
           piecePositions.remove(pieceAtPosition);
         }
+        // Remove pawn in case of en passant
+        var lastMove = game.getHistory({'verbose': true}).last;
+        if (lastMove['flags'] == 'e') {
+          String enPassantPosition = lastMove['to'];
+          String file = enPassantPosition[0];
+          int rank = int.parse(enPassantPosition[1]);
+          String pawnKilledPosition = rank == 6 ? '${file}5' : '${file}4';
+          Offset enPassantOffset = _convertToOffset(pawnKilledPosition);
+
+          // Find the piece at the en passant position and remove it
+          String? capturedPawn;
+          for (var entry in piecePositions.entries) {
+            if (entry.value == enPassantOffset) {
+              capturedPawn = entry.key;
+              break;
+            }
+          }
+          if (capturedPawn != null) {
+            piecePositions.remove(capturedPawn);
+          }
+        }
+
+        // Move the selected piece
         piecePositions[details.data] = position;
         selectedPiece = null;
       });
@@ -330,6 +352,28 @@ class ChessScreenState extends State<ChessScreen> {
           if (pieceAtPosition != null) {
             piecePositions.remove(pieceAtPosition);
           }
+          // Remove pawn in case of en passant
+          var lastMove = game.getHistory({'verbose': true}).last;
+          if (lastMove['flags'] == 'e') {
+            String enPassantPosition = lastMove['to'];
+            String file = enPassantPosition[0];
+            int rank = int.parse(enPassantPosition[1]);
+            String pawnKilledPosition = rank == 6 ? '${file}5' : '${file}4';
+            Offset enPassantOffset = _convertToOffset(pawnKilledPosition);
+
+            // Find the piece at the en passant position and remove it
+            String? capturedPawn;
+            for (var entry in piecePositions.entries) {
+              if (entry.value == enPassantOffset) {
+                capturedPawn = entry.key;
+                break;
+              }
+            }
+            if (capturedPawn != null) {
+              piecePositions.remove(capturedPawn);
+            }
+          }
+
           // Move the selected piece
           piecePositions[selectedPiece!] = Offset(x.toDouble(), y.toDouble());
           selectedPiece = null;
@@ -413,5 +457,11 @@ class ChessScreenState extends State<ChessScreen> {
     String file = String.fromCharCode(97 + position.dx.toInt());
     String rank = (8 - position.dy.toInt()).toString();
     return '$file$rank';
+  }
+
+  Offset _convertToOffset(String notation) {
+    int file = notation.codeUnitAt(0) - 97;
+    int rank = 8 - int.parse(notation[1]);
+    return Offset(file.toDouble(), rank.toDouble());
   }
 }
