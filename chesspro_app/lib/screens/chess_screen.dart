@@ -23,6 +23,7 @@ class ChessScreenState extends State<ChessScreen> {
   chess.Chess game = chess.Chess();
   static var logger = Logger();
   bool isGameOver = false;
+  int promotedPieceCount = 0;
 
   Map<String, Offset> piecePositions = {
     'white_pawn1': Offset(0, 6),
@@ -268,6 +269,12 @@ class ChessScreenState extends State<ChessScreen> {
     String from = _convertToChessNotation(piecePositions[details.data]!);
     String to = _convertToChessNotation(position);
 
+    bool isPromotionMove = _isPromotionMove(from, to);
+    if (isPromotionMove) {
+      _showPromotionDialog(from, to);
+      return;
+    }
+
     if (game.move({'from': from, 'to': to})) {
       // Valid move
       setState(() {
@@ -318,9 +325,7 @@ class ChessScreenState extends State<ChessScreen> {
   }
 
   void onSquareTapped(int x, int y) {
-    if (isGameOver) {
-      return;
-    }
+    if (isGameOver) return;
     setState(() {
       // Check if there's a piece at the tapped position
       String? pieceAtPosition;
@@ -346,6 +351,23 @@ class ChessScreenState extends State<ChessScreen> {
         // Second tap - move the selected piece or select a different piece
         String from = _convertToChessNotation(piecePositions[selectedPiece!]!);
         String to = _convertToChessNotation(Offset(x.toDouble(), y.toDouble()));
+
+        // Select a different piece
+        if (pieceAtPosition != null && pieceAtPosition != selectedPiece) {
+          bool isWhiteTurn = game.turn == chess.Color.WHITE;
+          bool isWhitePiece = pieceAtPosition.contains('white');
+          if ((isWhiteTurn && isWhitePiece) ||
+              (!isWhiteTurn && !isWhitePiece)) {
+            selectedPiece = pieceAtPosition; // Select the new piece
+            return;
+          }
+        }
+
+        bool isPromotionMove = _isPromotionMove(from, to);
+        if (isPromotionMove) {
+          _showPromotionDialog(from, to);
+          return;
+        }
         if (game.move({'from': from, 'to': to})) {
           // Valid move
           // Remove enemy piece if present
@@ -384,6 +406,77 @@ class ChessScreenState extends State<ChessScreen> {
       }
 
       endGame();
+    });
+  }
+
+  bool _isPromotionMove(String from, String to) {
+    // Check if the move is a promotion
+    bool promotionMove = false;
+    game.moves({'from': from, 'to': to, 'verbose': true}).forEach((move) {
+      if (move['flags'].contains('p')) {
+        promotionMove = true;
+      }
+    });
+    return promotionMove;
+  }
+
+  void _showPromotionDialog(String from, String to) {
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text("Promote Pawn"),
+          content: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceAround,
+            children:
+                ['q', 'r', 'b', 'n'].map((piece) {
+                  return IconButton(
+                    icon: Image.asset(
+                      getPromotionPieceImage(piece, game.turn),
+                      width: 40,
+                      height: 40,
+                    ),
+                    onPressed: () {
+                      // Remove enemy piece if present
+                      String? pieceAtPosition;
+                      for (var entry in piecePositions.entries) {
+                        if (entry.value == _convertToOffset(to)) {
+                          pieceAtPosition = entry.key;
+                          break;
+                        }
+                      }
+                      if (pieceAtPosition != null) {
+                        piecePositions.remove(pieceAtPosition);
+                      }
+
+                      // Perform the promotion move
+                      game.move({'from': from, 'to': to, 'promotion': piece});
+
+                      setState(() {
+                        // Update the promoted pawn's name in the piecePositions map
+                        String promotedPieceName =
+                            '${game.turn == chess.Color.WHITE ? 'black' : 'white'}_${_getPieceName(piece)}_promoted${promotedPieceCount++}';
+                        piecePositions.remove(selectedPiece); // Remove the pawn
+                        piecePositions[promotedPieceName] = _convertToOffset(
+                          to,
+                        ); // Add the promoted piece
+                        selectedPiece = null;
+                      });
+
+                      Navigator.pop(context);
+                      endGame();
+                    },
+                  );
+                }).toList(),
+          ),
+        );
+      },
+    ).then((_) {
+      // Reset selected piece after dialog is closed
+      setState(() {
+        selectedPiece = null;
+      });
     });
   }
 
@@ -452,6 +545,21 @@ class ChessScreenState extends State<ChessScreen> {
     return 'assets/pieces/wp.png'; // Fallback image
   }
 
+  String _getPieceName(String pieceCode) {
+    switch (pieceCode) {
+      case 'q':
+        return 'queen';
+      case 'r':
+        return 'rook';
+      case 'b':
+        return 'bishop';
+      case 'n':
+        return 'knight';
+      default:
+        return 'pawn'; // Fallback (shouldn't happen in promotion)
+    }
+  }
+
   String _convertToChessNotation(Offset position) {
     // Convert board coordinates to chess notation (e.g., (0, 6) -> "a2")
     String file = String.fromCharCode(97 + position.dx.toInt());
@@ -463,5 +571,10 @@ class ChessScreenState extends State<ChessScreen> {
     int file = notation.codeUnitAt(0) - 97;
     int rank = 8 - int.parse(notation[1]);
     return Offset(file.toDouble(), rank.toDouble());
+  }
+
+  String getPromotionPieceImage(String piece, chess.Color color) {
+    final prefix = color == chess.Color.WHITE ? 'w' : 'b';
+    return 'assets/pieces/$prefix$piece.png';
   }
 }
