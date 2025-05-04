@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
 import 'package:logger/logger.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ApiService {
   static const String baseUrl = "http://3.16.27.216:3264";
@@ -39,7 +40,7 @@ class ApiService {
 
   // Login
   static Future<Map<String, dynamic>?> loginUser(
-    String identifier, 
+    String identifier,
     String password,
   ) async {
     final url = Uri.parse("$baseUrl/login");
@@ -63,6 +64,44 @@ class ApiService {
     } catch (e) {
       logger.e("Login Error: $e");
       return null;
+    }
+  }
+
+  // Connect to WebSocket server
+  static WebSocketChannel? connectToWebSocket(String token) {
+    final wsUrl = Uri.parse("$baseUrl/ws?token=$token");
+
+    try {
+      final channel = WebSocketChannel.connect(
+        wsUrl.replace(scheme: "ws"),
+      );
+
+      logger.i("Connected to WebSocket server.");
+      return channel;
+    } catch (e) {
+      logger.e("WebSocket connection error: $e");
+      return null;
+    }
+  }
+
+  // Send message to WebSocket server
+  static void sendMessage(WebSocketChannel channel, Map<String, dynamic> message) {
+    try {
+      final jsonMessage = jsonEncode(message);
+      channel.sink.add(jsonMessage);
+      logger.i("Message sent: $jsonMessage");
+    } catch (e) {
+      logger.e("Error sending message: $e");
+    }
+  }
+
+  // Close WebSocket connection
+  static void closeWebSocket(WebSocketChannel channel) {
+    try {
+      channel.sink.close();
+      logger.i("WebSocket connection closed.");
+    } catch (e) {
+      logger.e("Error closing WebSocket: $e");
     }
   }
 }

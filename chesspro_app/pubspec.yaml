@@ -17,6 +17,7 @@ dependencies:
   logger: ^2.5.0
   flutter_blue_plus: ^1.30.0
   chess: ^0.8.1
+  web_socket_channel: ^3.0.3
 
 dev_dependencies:
   flutter_test:

@@ -6,6 +6,7 @@ import 'screens/signup_screen.dart';
 import 'screens/login_screen.dart';
 import 'screens/home_screen.dart';
 import 'screens/chess_screen.dart';
+import 'screens/lobby_screen.dart';
 import 'theme.dart';
 
 void main() {
@@ -60,6 +61,7 @@ class MyAppState extends State<MyApp> {
         '/login': (context) => LoginScreen(),
         '/home': (context) => HomeScreen(),
         '/chess': (context) => ChessScreen(),
+        '/lobby': (context) => LobbyScreen(),
       },
     );
   }

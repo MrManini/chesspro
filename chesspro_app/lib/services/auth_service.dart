@@ -43,4 +43,20 @@ class AuthService {
       return false;
     }
   }
+
+  static Future getAccessToken() async {
+    String? accessToken = await StorageHelper.readToken('access_token');
+    if (accessToken == null) {
+      return null; // No access token available
+    }
+    return accessToken;
+  }
+
+  static Future getRefreshToken() async {
+    String? refreshToken = await StorageHelper.readToken('refresh_token');
+    if (refreshToken == null) {
+      return null; // No refresh token available
+    }
+    return refreshToken;
+  }
 }
