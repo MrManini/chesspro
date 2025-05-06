@@ -26,36 +26,42 @@ class LobbyScreenState extends State<LobbyScreen> {
     setupWebSocket();
   }
 
-void setupWebSocket() async {
-  String token = await AuthService.getAccessToken();
-  channel = ApiService.connectToWebSocket(token);
+  void setupWebSocket() async {
+    String token = await AuthService.getAccessToken();
+    channel = ApiService.connectToWebSocket(token);
 
-  channel!.stream.listen(
-    (data) {
-      logger.i("Received: $data");
-      final message = parseMessage(data); // Make this yourself if needed
+    channel!.stream.listen(
+      (data) {
+        logger.i("Received: $data");
+        final message = parseMessage(data);
 
-      if (message["type"] == "player_list") {
-        setState(() {
-          players = List<String>.from(message["players"]);
-        });
-      } else if (message["type"] == "game_ready") {
-        setState(() {
-          gameReady = true;
-        });
-      }
-    },
-    onDone: () {
-      logger.w("WebSocket connection closed");
-      setState(() => serverConnected = false);
-    },
-    onError: (error) {
-      logger.e("WebSocket error: $error");
-      setState(() => serverConnected = false);
-    },
-  );
-}
+        if (message["type"] == "player_list") {
+          setState(() {
+            players = List<String>.from(message["players"]);
+          });
+        } else if (message["type"] == "game_ready") {
+          setState(() {
+            gameReady = true;
+          });
+        }
 
+        // If first successful message, mark as connected
+        if (!serverConnected) {
+          setState(() {
+            serverConnected = true;
+          });
+        }
+      },
+      onDone: () {
+        logger.w("WebSocket connection closed");
+        setState(() => serverConnected = false);
+      },
+      onError: (error) {
+        logger.e(error);
+        setState(() => serverConnected = false);
+      },
+    );
+  }
 
   void selectColor(String color) {
     setState(() {

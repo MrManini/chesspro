@@ -5,6 +5,7 @@ import 'package:web_socket_channel/web_socket_channel.dart';
 
 class ApiService {
   static const String baseUrl = "http://3.16.27.216:3264";
+  static const String wsBaseUrl = "ws://3.16.27.216:6432";
   static var logger = Logger();
 
   // Signup
@@ -69,7 +70,7 @@ class ApiService {
 
   // Connect to WebSocket server
   static WebSocketChannel? connectToWebSocket(String token) {
-    final wsUrl = Uri.parse("$baseUrl/ws?token=$token");
+    final wsUrl = Uri.parse("$wsBaseUrl?token=$token");
 
     try {
       final channel = WebSocketChannel.connect(

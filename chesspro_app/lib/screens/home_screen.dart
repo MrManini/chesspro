@@ -119,7 +119,7 @@ class HomeScreenState extends State<HomeScreen>
                                   onPressed: () {
                                     Navigator.pushReplacementNamed(
                                       context,
-                                      '/chess',
+                                      '/lobby',
                                     );
                                   },
                                   style: AppStyles.getSecondaryButtonStyle(

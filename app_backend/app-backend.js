@@ -123,6 +123,51 @@ app.post("/login", async (req, res) => {
     }
 });
 
+// Route to test access token
+app.get("/test-access-token", (req, res) => {
+    const authHeader = req.headers['authorization'];
+
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+        return res.status(401).json({ error: "Unauthorized" });
+    }
+
+    const token = authHeader.split(' ')[1];
+
+    try {
+        // Verify the token
+        jwt.verify(token, process.env.JWT_SECRET);
+        return res.status(200).json({ message: "Access token is valid" });
+    } catch (err) {
+        return res.status(401).json({ error: "Access token is invalid or expired" });
+    }
+});
+
+app.post("/refresh", async (req, res) => {
+    const { refreshToken } = req.body;
+
+    if (!refreshToken) {
+        return res.status(400).json({ error: "Refresh token is required." });
+    }
+
+    try {
+        // Verify the refresh token
+        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+
+        // Generate a new access token
+        const user = {
+            uuid: decoded.uuid,
+            username: decoded.username,
+            email: decoded.email,
+        };
+        const newAccessToken = generateToken(user, 'access');
+
+        return res.status(200).json({ accessToken: newAccessToken });
+    } catch (err) {
+        console.error(err);
+        return res.status(401).json({ error: "Invalid or expired refresh token." });
+    }
+});
+
 function generateToken(user, type) {
     let secret;
     let time;

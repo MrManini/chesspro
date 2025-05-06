@@ -21,7 +21,7 @@ class AuthService {
 
   static Future<bool> _testAccessToken(String accessToken) async {
     final response = await http.get(
-      Uri.parse('https://your-backend.com/protected-route'),
+      Uri.parse('http://3.16.27.216:3264/test-access-token'),
       headers: {'Authorization': 'Bearer $accessToken'},
     );
     return response.statusCode != 401; // 401 means expired
@@ -29,7 +29,7 @@ class AuthService {
 
   static Future<bool> refreshAccessToken(String refreshToken) async {
     final response = await http.post(
-      Uri.parse('https://your-backend.com/refresh'),
+      Uri.parse('http://3.16.27.216:3264/refresh'),
       body: jsonEncode({'refreshToken': refreshToken}),
       headers: {'Content-Type': 'application/json'},
     );
