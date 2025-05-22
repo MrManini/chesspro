@@ -135,7 +135,7 @@ app.get("/test-access-token", (req, res) => {
 
     try {
         // Verify the token
-        jwt.verify(token, process.env.JWT_SECRET);
+        jwt.verify(token, process.env.JWT_ACCESS_SECRET);
         return res.status(200).json({ message: "Access token is valid" });
     } catch (err) {
         return res.status(401).json({ error: "Access token is invalid or expired" });
@@ -151,7 +151,7 @@ app.post("/refresh", async (req, res) => {
 
     try {
         // Verify the refresh token
-        const decoded = jwt.verify(refreshToken, process.env.JWT_SECRET);
+        const decoded = jwt.verify(refreshToken, process.env.JWT_REFRESH_SECRET);
 
         // Generate a new access token
         const user = {

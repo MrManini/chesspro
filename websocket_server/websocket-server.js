@@ -37,7 +37,7 @@ wss.on('connection', async (ws, req) => {
     }
 
     try {
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const decoded = jwt.verify(token, process.env.JWT_ACCESS_SECRET);
         const user = await pool.query('SELECT * FROM users where uuid = $1', [decoded.uuid]);
         if (user.rows.length === 0) {
             ws.close();
