@@ -44,6 +44,24 @@ wss.on('connection', async (ws, req) => {
             return;
         }
         lastUsernameConnected = user.rows[0].username;
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN) {
+                client.send(JSON.stringify({
+                    type: "user_connected",
+                    username: lastUsernameConnected
+                }));
+            }
+        });
+        const clientUsernames = [];
+        for (const client of wss.clients) {
+            if (client !== ws && client.readyState === WebSocket.OPEN && client.lastUsernameConnected) {
+                clientUsernames.push(client.lastUsernameConnected);
+            }
+        }
+        ws.send(JSON.stringify({
+            type: "player_list",
+            clients: clientUsernames
+        }));
     } catch (error) {
         console.log(`Closed connection due to error: ${error}`);
         ws.close();
