@@ -201,6 +201,7 @@ function setGameMode(mode) {
         player1 = null;
         player2 = null;
     }
+    console.log(`Game mode set to: ${gamemode}`);
 }
 
 function sendGameState(ws) {
