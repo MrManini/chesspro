@@ -56,7 +56,7 @@ wss.on('connection', async (ws, req) => {
             ws.send(JSON.stringify({type: "role", role: "guest"}));
         }
 
-        if (gamemode === "pvp" && player2 === null && isAdmin) {
+        if (gamemode === "pvp" && player2 === null && admin) {
             player2 = ws;
             ws.send(JSON.stringify({type: "role", role: "player2"}));
         }
