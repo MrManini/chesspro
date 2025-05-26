@@ -103,6 +103,7 @@ wss.on('connection', async (ws, req) => {
     ws.on('message', async (message) => {
         try {
             const data = JSON.parse(message);
+            console.log(`Received message from ${ws.lastUsernameConnected}:`, data);
             // Admin-specific commands
             if (ws === admin) {
                 if (data.command === "admin.set_mode" && !isGameOngoing) {

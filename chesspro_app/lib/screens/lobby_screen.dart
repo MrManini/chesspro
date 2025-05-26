@@ -41,6 +41,7 @@ class LobbyScreenState extends State<LobbyScreen> {
         "command": "set_mode",
         "mode": widget.gamemode,
       });
+      logger.i("Admin mode set to: ${widget.gamemode}");
     }
 
     broadcastStream.listen(
