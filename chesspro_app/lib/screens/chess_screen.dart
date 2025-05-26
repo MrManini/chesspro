@@ -10,15 +10,15 @@ class ChessScreen extends StatefulWidget {
   final String? color;
   final WebSocketChannel? channel;
   final Stream? stream;
-  final String? player1;
-  final String? player2;
+  final String? whitePlayer;
+  final String? blackPlayer;
   const ChessScreen({
     super.key,
     this.channel,
     this.color,
     this.stream,
-    this.player1,
-    this.player2,
+    this.whitePlayer,
+    this.blackPlayer,
   });
 
   @override
@@ -157,12 +157,12 @@ class ChessScreenState extends State<ChessScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Top elements
-            // Top username (player2, usually black)
-            if (widget.player2 != null && widget.player1 != null)
+            // Top username (blackPlayer, usually black)
+            if (widget.blackPlayer != null && widget.whitePlayer != null)
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Text(
-                  isFlipped ? widget.player1! : widget.player2!,
+                  isFlipped ? widget.whitePlayer! : widget.blackPlayer!,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
@@ -319,12 +319,12 @@ class ChessScreenState extends State<ChessScreen> {
             ),
 
             // Bottom elements
-            // Bottom username (player1, usually white)
-            if (widget.player1 != null && widget.player2 != null)
+            // Bottom username (whitePlayer, usually white)
+            if (widget.whitePlayer != null && widget.blackPlayer != null)
               Padding(
                 padding: const EdgeInsets.only(top: 8.0),
                 child: Text(
-                  isFlipped ? widget.player2! : widget.player1!,
+                  isFlipped ? widget.blackPlayer! : widget.whitePlayer!,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),

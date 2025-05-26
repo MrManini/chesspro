@@ -141,6 +141,7 @@ wss.on('connection', async (ws, req) => {
                             client.send(JSON.stringify({
                                 type: "game_started",
                                 mode: gamemode,
+                                player1Color: player1Color,
                                 player1: player1Username,
                                 player2: player2Username
                             }));

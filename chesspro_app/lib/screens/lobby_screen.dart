@@ -96,8 +96,12 @@ class LobbyScreenState extends State<LobbyScreen> {
                 color: selectedColor,
                 channel: channel,
                 stream: broadcastStream,
-                player1: message["player1"],
-                player2: message["player2"],
+                whitePlayer: message["player1Color"] == "white"
+                    ? message["player1"]
+                    : message["player2"],
+                blackPlayer: message["player1Color"] == "black"
+                    ? message["player1"]
+                    : message["player2"],
               ),
             ),
           );
