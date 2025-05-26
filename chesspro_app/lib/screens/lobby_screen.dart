@@ -88,21 +88,19 @@ class LobbyScreenState extends State<LobbyScreen> {
             });
           }
         } else if (message["type"] == "game_started") {
-          if (!widget.isAdmin) {
-            if (!mounted) return;
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => ChessScreen(
-                  color: selectedColor,
-                  channel: channel,
-                  stream: broadcastStream,
-                  player1: message["player1"],
-                  player2: message["player2"],
-                ),
+          if (!mounted) return;
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ChessScreen(
+                color: selectedColor,
+                channel: channel,
+                stream: broadcastStream,
+                player1: message["player1"],
+                player2: message["player2"],
               ),
-            );
-          }
+            ),
+          );
         }
 
         // If first successful message, mark as connected
@@ -150,17 +148,6 @@ class LobbyScreenState extends State<LobbyScreen> {
         ApiService.sendMessage(channel!, {"command": "admin.start_game"});
         logger.i("Starting game with color: $selectedColor");
 
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder:
-                (context) => ChessScreen(
-                  color: selectedColor,
-                  channel: channel,
-                  stream: broadcastStream,
-                ),
-          ),
-        );
       } catch (e) {
         logger.e("Error starting game: $e");
       }

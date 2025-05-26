@@ -254,6 +254,7 @@ function setColor(color) {
 
 function isGameReady() {
     if (gamemode === 'pvp') {
+        console.log(`isGameReady: gamemode is ${gamemode}, player1: ${player1}, player2: ${player2}`);
         return !isGameOngoing && player1 && player2;
     } else if (gamemode === 'pvb') {
         return !isGameOngoing && player1;
