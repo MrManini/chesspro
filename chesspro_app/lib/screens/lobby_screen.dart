@@ -43,7 +43,7 @@ class LobbyScreenState extends State<LobbyScreen> {
           // Option 1: If the message contains the full player list
           if (message.containsKey("players")) {
             setState(() {
-              players = List<String>.from(message["players"]);
+              players = List<String>.from(message["clients"]);
             });
           }
           // Option 2: If the message only contains the new user's name
