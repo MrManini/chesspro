@@ -75,7 +75,7 @@ class LobbyScreenState extends State<LobbyScreen> {
           });
         } else if (message["type"] == "color_set" && role == "player2") {
           setState(() {
-            selectedColor = message["color"] == "white" ? "black" : "white";
+            selectedColor = message["player1Color"] == "white" ? "black" : "white";
           });
           logger.i("Color set for player2: $selectedColor");
         } else if (message["type"] == "game_ready") {

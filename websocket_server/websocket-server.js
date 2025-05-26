@@ -105,12 +105,6 @@ wss.on('connection', async (ws, req) => {
         return;
     }
 
-    if (admin && gamemode === 'pvp' && player2 === null) {
-        ws.send(JSON.stringify({type: "role", role: "player2"}));
-    } else {
-        ws.send(JSON.stringify({type: "role", role: "spectator"}));
-    }
-
     sendGameState(ws);
     clients.add(ws);
     console.log(`Client (${lastUsernameConnected}) connected (${clients.size} total)`);
