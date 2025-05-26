@@ -68,6 +68,7 @@ wss.on('connection', async (ws, req) => {
             type: "player_list",
             clients: clientUsernames
         }));
+        console.log(`Sent ${clientUsernames.length} players to ${ws.lastUsernameConnected}`);
     } catch (error) {
         console.log(`Closed connection due to error: ${error}`);
         ws.close();
