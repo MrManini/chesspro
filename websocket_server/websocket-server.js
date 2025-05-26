@@ -61,6 +61,7 @@ wss.on('connection', async (ws, req) => {
         if (gamemode === "pvp" && !player2 && admin) {
             player2 = ws;
             ws.send(JSON.stringify({type: "role", role: "player2"}));
+            console.log(`player 2 set to: ${ws.lastUsernameConnected}!!!!!!`);
         } else {
             console.log(`gamemode is ${gamemode}, player2 is ${player2}, admin is ${admin}`);
         }
@@ -210,10 +211,12 @@ function setGameMode(mode) {
         player1 = admin;
         player1Username = player1.lastUsernameConnected;
         player1.send(JSON.stringify({ type: "role", role: "player1" }));
+        console.log(`pvp: Player1 set to: ${player1Username}`);
         player2 = clients.find((ws) => ws !== admin);
         if (player2) {
             player2.send(JSON.stringify({ type: "role", role: "player2" }));
             player2Username = player2.lastUsernameConnected;
+            console.log(`pvp: Player2 set to: ${player2Username}`);
         }
     } else if (mode === "pvb") {
         player1 = admin;
