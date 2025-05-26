@@ -58,6 +58,12 @@ class LobbyScreenState extends State<LobbyScreen> {
           setState(() {
             gameReady = true;
           });
+        } else if (message["type"] == "user_disconnected") {
+          if (message.containsKey("username")) {
+            setState(() {
+              players.remove(message["username"]);
+            });
+          }
         }
 
         // If first successful message, mark as connected

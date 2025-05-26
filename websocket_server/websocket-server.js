@@ -135,6 +135,15 @@ wss.on('connection', async (ws, req) => {
     });
 
     ws.on('close', () => {
+        // Notify all clients about the user disconnecting
+        wss.clients.forEach((client) => {
+            if (client.readyState === WebSocket.OPEN && ws.lastUsernameConnected) {
+                client.send(JSON.stringify({
+                    type: "user_disconnected",
+                    username: ws.lastUsernameConnected
+                }));
+            }
+        });
         clients.delete(ws);
         if (ws === admin) {
             admin = null;
