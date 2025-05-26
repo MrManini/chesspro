@@ -56,6 +56,11 @@ wss.on('connection', async (ws, req) => {
             ws.send(JSON.stringify({type: "role", role: "guest"}));
         }
 
+        if (gamemode === "pvp" && player2 === null && isAdmin) {
+            player2 = ws;
+            ws.send(JSON.stringify({type: "role", role: "player2"}));
+        }
+
         // Store username on the ws object
         ws.lastUsernameConnected = user.rows[0].username;
 

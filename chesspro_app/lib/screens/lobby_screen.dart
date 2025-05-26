@@ -38,7 +38,7 @@ class LobbyScreenState extends State<LobbyScreen> {
     broadcastStream = channel!.stream.asBroadcastStream();
     if (widget.isAdmin) {
       ApiService.sendMessage(channel!, {
-        "command": "set_mode",
+        "command": "admin.set_mode",
         "mode": widget.gamemode,
       });
       logger.i("Admin mode set to: ${widget.gamemode}");
