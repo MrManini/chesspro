@@ -163,9 +163,6 @@ class LobbyScreenState extends State<LobbyScreen> {
 
   @override
   void dispose() {
-    if (channel != null) {
-      ApiService.closeWebSocket(channel!);
-    }
     super.dispose();
   }
 
