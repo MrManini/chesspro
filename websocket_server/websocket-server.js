@@ -31,6 +31,7 @@ let lastUsernameConnected = null;
 
 wss.on('connection', async (ws, req) => {
     const token = new URL(req.url, `http://localhost`).searchParams.get('token');
+    const isAdmin = url.searchParams.get('isAdmin') === 'true';
     if (!token) {
         ws.close();
         return;
@@ -43,6 +44,18 @@ wss.on('connection', async (ws, req) => {
             ws.close();
             return;
         }
+
+        if (isAdmin) {
+            if (!admin) {
+                admin = ws;
+                ws.send(JSON.stringify({type: "role", role: "admin"}));
+            } else {
+                ws.send(JSON.stringify({type: "role", role: "spectator"}));
+            }
+        } else {
+            ws.send(JSON.stringify({type: "role", role: "guest"}));
+        }
+
         // Store username on the ws object
         ws.lastUsernameConnected = user.rows[0].username;
 
@@ -75,10 +88,7 @@ wss.on('connection', async (ws, req) => {
         return;
     }
 
-    if (!admin) {
-        admin = ws;
-        ws.send(JSON.stringify({type: "role", role: "admin"}));
-    } else if (admin && gamemode === 'pvp' && player2 === null) {
+    if (admin && gamemode === 'pvp' && player2 === null) {
         ws.send(JSON.stringify({type: "role", role: "player2"}));
     } else {
         ws.send(JSON.stringify({type: "role", role: "spectator"}));

@@ -69,8 +69,8 @@ class ApiService {
   }
 
   // Connect to WebSocket server
-  static WebSocketChannel? connectToWebSocket(String token) {
-    final wsUrl = Uri.parse("$wsBaseUrl?token=$token");
+  static WebSocketChannel? connectToWebSocket(String token, {bool isAdmin = false}) {
+    final wsUrl = Uri.parse("$wsBaseUrl?token=$token&isAdmin=$isAdmin");
 
     try {
       final channel = WebSocketChannel.connect(

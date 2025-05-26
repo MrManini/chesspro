@@ -8,7 +8,9 @@ import 'package:chesspro_app/services/api_service.dart';
 import 'package:chesspro_app/services/auth_service.dart';
 
 class LobbyScreen extends StatefulWidget {
-  const LobbyScreen({super.key});
+  final bool isAdmin;
+  final String? gamemode;
+  const LobbyScreen({super.key, this.isAdmin = false, this.gamemode});
 
   @override
   LobbyScreenState createState() => LobbyScreenState();
@@ -32,8 +34,14 @@ class LobbyScreenState extends State<LobbyScreen> {
 
   void setupWebSocket() async {
     String token = await AuthService.getAccessToken();
-    channel = ApiService.connectToWebSocket(token);
+    channel = ApiService.connectToWebSocket(token, isAdmin: widget.isAdmin);
     broadcastStream = channel!.stream.asBroadcastStream();
+    if (widget.isAdmin) {
+      ApiService.sendMessage(channel!, {
+        "command": "set_mode",
+        "mode": widget.gamemode,
+      });
+    }
 
     broadcastStream.listen(
       (data) {
@@ -55,7 +63,7 @@ class LobbyScreenState extends State<LobbyScreen> {
           else if (message.containsKey("username")) {
             setState(() {
               if (!players.contains(message["username"])) {
-          players.add(message["username"]);
+                players.add(message["username"]);
               }
             });
           }
@@ -90,6 +98,7 @@ class LobbyScreenState extends State<LobbyScreen> {
   }
 
   void selectColor(String color) {
+    if (!widget.isAdmin) return;
     setState(() {
       selectedColor = color;
     });
@@ -102,19 +111,21 @@ class LobbyScreenState extends State<LobbyScreen> {
   }
 
   void startGame() {
+    if (!widget.isAdmin) return;
     if (serverConnected && players.length >= 2) {
       try {
         ApiService.sendMessage(channel!, {"command": "admin.start_game"});
         logger.i("Starting game with color: $selectedColor");
-        
+
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => ChessScreen(
-              color: selectedColor == "random" ? null : selectedColor,
-              channel: channel,
-              stream: broadcastStream,
-            ),
+            builder:
+                (context) => ChessScreen(
+                  color: selectedColor == "random" ? null : selectedColor,
+                  channel: channel,
+                  stream: broadcastStream,
+                ),
           ),
         );
       } catch (e) {
@@ -141,28 +152,29 @@ class LobbyScreenState extends State<LobbyScreen> {
         padding: const EdgeInsets.all(16.0),
         child: Column(
           children: [
-            Text("Connecting to Board... (not implemented)"),
             Text(
               serverConnected
                   ? "Connected to server!"
                   : "Connecting to server...",
             ),
             SizedBox(height: 20),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children:
-                  ["white", "random", "black"].map((color) {
-                    return ElevatedButton(
-                      onPressed: () => selectColor(color),
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            selectedColor == color ? Colors.green : null,
-                      ),
-                      child: Text(color.toUpperCase()),
-                    );
-                  }).toList(),
-            ),
-            SizedBox(height: 20),
+            if (widget.isAdmin) ...[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children:
+                    ["white", "random", "black"].map((color) {
+                      return ElevatedButton(
+                        onPressed: () => selectColor(color),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor:
+                              selectedColor == color ? Colors.green : null,
+                        ),
+                        child: Text(color.toUpperCase()),
+                      );
+                    }).toList(),
+              ),
+              SizedBox(height: 20),
+            ],
             Text("Players:"),
             Expanded(
               child: ListView.builder(
@@ -172,10 +184,13 @@ class LobbyScreenState extends State<LobbyScreen> {
               ),
             ),
             SizedBox(height: 10),
-            ElevatedButton(
-              onPressed: canStart ? startGame : null,
-              child: Text("Start Game"),
-            ),
+            if (widget.isAdmin)
+              ElevatedButton(
+                onPressed: canStart ? startGame : null,
+                child: Text("Start Game"),
+              )
+            else
+              Text("Waiting for admin to start the game..."),
           ],
         ),
       ),

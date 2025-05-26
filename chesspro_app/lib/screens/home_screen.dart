@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:chesspro_app/utils/storage_helper.dart';
 import 'package:chesspro_app/utils/styles.dart';
+import 'package:chesspro_app/screens/lobby_screen.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -117,9 +118,15 @@ class HomeScreenState extends State<HomeScreen>
                                 width: 120,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    Navigator.pushReplacementNamed(
+                                    Navigator.push(
                                       context,
-                                      '/lobby',
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => LobbyScreen(
+                                              isAdmin: true,
+                                              gamemode: "pvp",
+                                            ),
+                                      ),
                                     );
                                   },
                                   style: AppStyles.getSecondaryButtonStyle(
@@ -143,9 +150,15 @@ class HomeScreenState extends State<HomeScreen>
                                 width: 120,
                                 child: ElevatedButton(
                                   onPressed: () {
-                                    Navigator.pushReplacementNamed(
+                                    Navigator.push(
                                       context,
-                                      '/chess',
+                                      MaterialPageRoute(
+                                        builder:
+                                            (context) => LobbyScreen(
+                                              isAdmin: true,
+                                              gamemode: "pvb",
+                                            ),
+                                      ),
                                     );
                                   },
                                   style: AppStyles.getSecondaryButtonStyle(
@@ -164,7 +177,7 @@ class HomeScreenState extends State<HomeScreen>
                                   ),
                                 ),
                               ),
-/*                               SizedBox(
+                              /*                               SizedBox(
                                 width: 120,
                                 child: ElevatedButton(
                                   onPressed: () {
@@ -196,7 +209,16 @@ class HomeScreenState extends State<HomeScreen>
                       ),
                     ),
                     ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder:
+                                (context) =>
+                                    LobbyScreen(isAdmin: false, gamemode: null),
+                          ),
+                        );
+                      },
                       style: AppStyles.getSecondaryButtonStyle(context),
                       child: Text("Join Game", style: TextStyle(fontSize: 20)),
                     ),
