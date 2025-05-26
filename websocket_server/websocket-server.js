@@ -130,7 +130,7 @@ wss.on('connection', async (ws, req) => {
                     await resetGame();
                     setColor(player1Color);
                     isGameOngoing = true;
-                    console.log(`Game started in mode: ${gamemode}`);
+                    console.log(`Game started in mode: ${gamemode}, player1: ${player1Username}, player2: ${player2Username}`);
                     wss.clients.forEach((client) => {
                         if (client.readyState === WebSocket.OPEN) {
                             client.send(JSON.stringify({
