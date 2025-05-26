@@ -39,6 +39,21 @@ class LobbyScreenState extends State<LobbyScreen> {
           setState(() {
             players = List<String>.from(message["players"]);
           });
+        } else if (message["type"] == "user_connected") {
+          // Option 1: If the message contains the full player list
+          if (message.containsKey("players")) {
+            setState(() {
+              players = List<String>.from(message["players"]);
+            });
+          }
+          // Option 2: If the message only contains the new user's name
+          else if (message.containsKey("username")) {
+            setState(() {
+              if (!players.contains(message["username"])) {
+          players.add(message["username"]);
+              }
+            });
+          }
         } else if (message["type"] == "game_ready") {
           setState(() {
             gameReady = true;

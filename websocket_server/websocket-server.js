@@ -43,21 +43,27 @@ wss.on('connection', async (ws, req) => {
             ws.close();
             return;
         }
-        lastUsernameConnected = user.rows[0].username;
+        // Store username on the ws object
+        ws.lastUsernameConnected = user.rows[0].username;
+
+        // Notify all clients about the new user
         wss.clients.forEach((client) => {
             if (client.readyState === WebSocket.OPEN) {
                 client.send(JSON.stringify({
                     type: "user_connected",
-                    username: lastUsernameConnected
+                    username: ws.lastUsernameConnected
                 }));
             }
         });
+
+        // Build the list of all connected usernames except the current ws
         const clientUsernames = [];
         for (const client of wss.clients) {
             if (client !== ws && client.readyState === WebSocket.OPEN && client.lastUsernameConnected) {
                 clientUsernames.push(client.lastUsernameConnected);
             }
         }
+        // Send the list to the newly connected user
         ws.send(JSON.stringify({
             type: "player_list",
             clients: clientUsernames
