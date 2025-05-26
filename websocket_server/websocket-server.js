@@ -198,6 +198,23 @@ wss.on('connection', async (ws, req) => {
             player2 = null;
         }
         console.log(`Client disconnected (${clients.size} total)`);
+
+        // Reset all configuration if there are no users connected
+        if (wss.clients.size === 0) {
+            admin = null;
+            gamemode = null;
+            isGameOngoing = false;
+            player1 = null;
+            player2 = null;
+            player1Color = 'random';
+            player2Color = null;
+            lastUsernameConnected = null;
+            adminUsername = null;
+            player1Username = null;
+            player2Username = null;
+            console.log("All configuration reset: no users connected.");
+        }
+
     });
 });
 
