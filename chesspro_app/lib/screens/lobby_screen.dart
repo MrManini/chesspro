@@ -35,7 +35,6 @@ class LobbyScreenState extends State<LobbyScreen> {
   void setupWebSocket() async {
     String token = await AuthService.getAccessToken();
     channel = ApiService.connectToWebSocket(token, isAdmin: widget.isAdmin);
-    broadcastStream = channel!.stream.asBroadcastStream();
     if (widget.isAdmin) {
       ApiService.sendMessage(channel!, {
         "command": "admin.set_mode",
@@ -43,6 +42,7 @@ class LobbyScreenState extends State<LobbyScreen> {
       });
       logger.i("Admin mode set to: ${widget.gamemode}");
     }
+    broadcastStream = channel!.stream.asBroadcastStream();
 
     broadcastStream.listen(
       (data) {
