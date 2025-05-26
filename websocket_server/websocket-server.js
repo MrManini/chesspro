@@ -31,7 +31,7 @@ let lastUsernameConnected = null;
 
 wss.on('connection', async (ws, req) => {
     const token = new URL(req.url, `http://localhost`).searchParams.get('token');
-    const isAdmin = url.searchParams.get('isAdmin') === 'true';
+    const isAdmin = new URL(req.url, `http://localhost`).searchParams.get('isAdmin') === 'true';
     if (!token) {
         ws.close();
         return;
