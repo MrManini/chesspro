@@ -56,11 +56,14 @@ wss.on('connection', async (ws, req) => {
                 admin = ws;
                 ws.send(JSON.stringify({type: "role", role: "admin"}));
                 adminUsername = ws.lastUsernameConnected;
+                console.log(`Admin set to: ${adminUsername}`);
             } else {
                 ws.send(JSON.stringify({type: "role", role: "spectator"}));
+                console.log(`Spectator connected: ${adminUsername}`);
             }
         } else {
             ws.send(JSON.stringify({type: "role", role: "guest"}));
+            console.log(`Guest connected: ${ws.lastUsernameConnected}`);
         }
 
         if (gamemode === "pvp" && !player2 && admin) {

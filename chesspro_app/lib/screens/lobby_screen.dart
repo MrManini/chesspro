@@ -77,6 +77,7 @@ class LobbyScreenState extends State<LobbyScreen> {
           setState(() {
             selectedColor = message["color"] == "white" ? "black" : "white";
           });
+          logger.i("Color set for player2: $selectedColor");
         } else if (message["type"] == "game_ready") {
           setState(() {
             gameReady = true;
@@ -89,20 +90,25 @@ class LobbyScreenState extends State<LobbyScreen> {
           }
         } else if (message["type"] == "game_started") {
           if (!mounted) return;
+          logger.i("Game started with color: $selectedColor!!!!!!");
+
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ChessScreen(
-                color: selectedColor,
-                channel: channel,
-                stream: broadcastStream,
-                whitePlayer: message["player1Color"] == "white"
-                    ? message["player1"]
-                    : message["player2"],
-                blackPlayer: message["player1Color"] == "black"
-                    ? message["player1"]
-                    : message["player2"],
-              ),
+              builder:
+                  (context) => ChessScreen(
+                    color: selectedColor,
+                    channel: channel,
+                    stream: broadcastStream,
+                    whitePlayer:
+                        message["player1Color"] == "white"
+                            ? message["player1"]
+                            : message["player2"],
+                    blackPlayer:
+                        message["player1Color"] == "black"
+                            ? message["player1"]
+                            : message["player2"],
+                  ),
             ),
           );
         }
@@ -143,15 +149,14 @@ class LobbyScreenState extends State<LobbyScreen> {
     if (serverConnected && players.length >= 2) {
       try {
         if (selectedColor == null) {
-            selectedColor = (["white", "black"]..shuffle()).first;
-            ApiService.sendMessage(channel!, {
-              "command": "admin.set_color",
-              "color": selectedColor,
-            });
+          selectedColor = (["white", "black"]..shuffle()).first;
+          ApiService.sendMessage(channel!, {
+            "command": "admin.set_color",
+            "color": selectedColor,
+          });
         }
         ApiService.sendMessage(channel!, {"command": "admin.start_game"});
         logger.i("Starting game with color: $selectedColor");
-
       } catch (e) {
         logger.e("Error starting game: $e");
       }
