@@ -75,7 +75,8 @@ class LobbyScreenState extends State<LobbyScreen> {
           });
         } else if (message["type"] == "color_set" && role == "player2") {
           setState(() {
-            selectedColor = message["player1Color"] == "white" ? "black" : "white";
+            selectedColor =
+                message["player1Color"] == "white" ? "black" : "white";
           });
           logger.i("Color set for player2: $selectedColor");
         } else if (message["type"] == "game_ready") {
@@ -134,7 +135,11 @@ class LobbyScreenState extends State<LobbyScreen> {
   void selectColor(String color) {
     if (!widget.isAdmin) return;
     setState(() {
-      selectedColor = color;
+      if (color == "random") {
+        selectedColor = (["white", "black"]..shuffle()).first;
+      } else {
+        selectedColor = color;
+      }
     });
     if (serverConnected && channel != null) {
       ApiService.sendMessage(channel!, {
@@ -148,13 +153,6 @@ class LobbyScreenState extends State<LobbyScreen> {
     if (!widget.isAdmin) return;
     if (serverConnected && players.length >= 2) {
       try {
-        if (selectedColor == null) {
-          selectedColor = (["white", "black"]..shuffle()).first;
-          ApiService.sendMessage(channel!, {
-            "command": "admin.set_color",
-            "color": selectedColor,
-          });
-        }
         ApiService.sendMessage(channel!, {"command": "admin.start_game"});
         logger.i("Starting game with color: $selectedColor");
       } catch (e) {
