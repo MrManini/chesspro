@@ -66,6 +66,7 @@ wss.on('connection', async (ws, req) => {
 
             ws.send(JSON.stringify({type: "role", role: "player2"}));
             console.log(`player 2 set to: ${ws.lastUsernameConnected}!!!!!!`);
+            player2Username = ws.lastUsernameConnected;
         } else {
             console.log(`gamemode is ${gamemode}, player2 is ${player2}, admin is ${admin}`);
         }
