@@ -47,6 +47,9 @@ wss.on('connection', async (ws, req) => {
             return;
         }
 
+        // Store username on the ws object
+        ws.lastUsernameConnected = user.rows[0].username;
+
         if (isAdmin) {
             if (!admin) {
                 admin = ws;
@@ -60,14 +63,12 @@ wss.on('connection', async (ws, req) => {
 
         if (gamemode === "pvp" && !player2 && admin) {
             player2 = ws;
+
             ws.send(JSON.stringify({type: "role", role: "player2"}));
             console.log(`player 2 set to: ${ws.lastUsernameConnected}!!!!!!`);
         } else {
             console.log(`gamemode is ${gamemode}, player2 is ${player2}, admin is ${admin}`);
         }
-
-        // Store username on the ws object
-        ws.lastUsernameConnected = user.rows[0].username;
 
         // Notify all clients about the new user
         wss.clients.forEach((client) => {
