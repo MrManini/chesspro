@@ -59,7 +59,7 @@ wss.on('connection', async (ws, req) => {
         // Build the list of all connected usernames except the current ws
         const clientUsernames = [];
         for (const client of wss.clients) {
-            if (client !== ws && client.readyState === WebSocket.OPEN && client.lastUsernameConnected) {
+            if (client.readyState === WebSocket.OPEN && client.lastUsernameConnected) {
                 clientUsernames.push(client.lastUsernameConnected);
             }
         }
