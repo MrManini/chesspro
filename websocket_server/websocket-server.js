@@ -129,6 +129,11 @@ wss.on('connection', async (ws, req) => {
         }
     });
 
+    ws.on('error', (error) => {
+        console.error(`WebSocket error for ${ws.lastUsernameConnected}:`, error);
+        ws.close();
+    });
+
     ws.on('close', () => {
         clients.delete(ws);
         if (ws === admin) {

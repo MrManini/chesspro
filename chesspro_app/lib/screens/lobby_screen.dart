@@ -37,7 +37,7 @@ class LobbyScreenState extends State<LobbyScreen> {
 
         if (message["type"] == "player_list") {
           setState(() {
-            players = List<String>.from(message["players"]);
+            players = List<String>.from(message["clients"]);
           });
         } else if (message["type"] == "user_connected") {
           // Option 1: If the message contains the full player list
