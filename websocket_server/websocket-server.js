@@ -28,6 +28,7 @@ let player2 = null;
 let player1Color = 'random';
 let player2Color = null;
 let lastUsernameConnected = null;
+let adminUsername = null;
 let player1Username = null;
 let player2Username = null;
 
@@ -54,6 +55,7 @@ wss.on('connection', async (ws, req) => {
             if (!admin) {
                 admin = ws;
                 ws.send(JSON.stringify({type: "role", role: "admin"}));
+                adminUsername = ws.lastUsernameConnected;
             } else {
                 ws.send(JSON.stringify({type: "role", role: "spectator"}));
             }
@@ -68,7 +70,7 @@ wss.on('connection', async (ws, req) => {
             console.log(`player 2 set to: ${ws.lastUsernameConnected}!!!!!!`);
             player2Username = ws.lastUsernameConnected;
         } else {
-            console.log(`gamemode is ${gamemode}, player2 is ${player2}, admin is ${admin}`);
+            console.log(`gamemode is ${gamemode}, player2 is ${player2Username}, admin is ${admin}`);
         }
 
         // Notify all clients about the new user

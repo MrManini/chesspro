@@ -162,7 +162,7 @@ class ChessScreenState extends State<ChessScreen> {
               Padding(
                 padding: const EdgeInsets.only(bottom: 8.0),
                 child: Text(
-                  isFlipped ? widget.player2! : widget.player1!,
+                  isFlipped ? widget.player1! : widget.player2!,
                   textAlign: TextAlign.center,
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
                 ),
