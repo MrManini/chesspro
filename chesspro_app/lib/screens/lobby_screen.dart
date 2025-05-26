@@ -1,4 +1,6 @@
+import 'dart:async';
 import 'dart:convert';
+import 'package:chesspro_app/screens/chess_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -19,6 +21,8 @@ class LobbyScreenState extends State<LobbyScreen> {
   List<String> players = []; // will be filled with actual users
   bool gameReady = false;
   static var logger = Logger();
+  late StreamSubscription channelSubscription;
+  late Stream<dynamic> broadcastStream;
 
   @override
   void initState() {
@@ -29,8 +33,9 @@ class LobbyScreenState extends State<LobbyScreen> {
   void setupWebSocket() async {
     String token = await AuthService.getAccessToken();
     channel = ApiService.connectToWebSocket(token);
+    broadcastStream = channel!.stream.asBroadcastStream();
 
-    channel!.stream.listen(
+    broadcastStream.listen(
       (data) {
         logger.i("Received: $data");
         final message = parseMessage(data);
@@ -98,8 +103,23 @@ class LobbyScreenState extends State<LobbyScreen> {
 
   void startGame() {
     if (serverConnected && players.length >= 2) {
-      ApiService.sendMessage(channel!, {"command": "admin.start_game"});
-      Navigator.pushReplacementNamed(context, '/chess');
+      try {
+        ApiService.sendMessage(channel!, {"command": "admin.start_game"});
+        logger.i("Starting game with color: $selectedColor");
+        
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(
+            builder: (context) => ChessScreen(
+              color: selectedColor == "random" ? null : selectedColor,
+              channel: channel,
+              stream: broadcastStream,
+            ),
+          ),
+        );
+      } catch (e) {
+        logger.e("Error starting game: $e");
+      }
     }
   }
 

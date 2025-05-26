@@ -1,14 +1,16 @@
+import 'dart:async';
+import 'dart:convert';
 import 'package:chesspro_app/utils/styles.dart';
 import 'package:flutter/material.dart';
 import 'package:chess/chess.dart' as chess;
+import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:logger/logger.dart';
 
-void main() {
-  runApp(MaterialApp(home: ChessScreen()));
-}
-
 class ChessScreen extends StatefulWidget {
-  const ChessScreen({super.key});
+  final String? color;
+  final WebSocketChannel? channel;
+  final Stream? stream;
+  const ChessScreen({super.key, this.channel, this.color, this.stream});
 
   @override
   ChessScreenState createState() => ChessScreenState();
@@ -24,6 +26,7 @@ class ChessScreenState extends State<ChessScreen> {
   static var logger = Logger();
   bool isGameOver = false;
   int promotedPieceCount = 0;
+  StreamSubscription? _streamSubscription;
 
   Map<String, Offset> piecePositions = {
     'white_pawn1': Offset(0, 6),
@@ -65,6 +68,66 @@ class ChessScreenState extends State<ChessScreen> {
     'white_king': Offset(4, 7),
     'black_king': Offset(4, 0),
   };
+
+  @override
+  void initState() {
+    super.initState();
+    
+    final streamToUse = widget.stream ?? widget.channel?.stream.asBroadcastStream();
+    
+    if (streamToUse != null) {
+      _streamSubscription = streamToUse.listen((data) {
+        logger.i("Received: $data");
+        final message = parseMessage(data);
+        if (message["type"] == "move") {
+          setState(() {
+            game.move(message["move"]);
+          });
+        } else if (message["type"] == "reset") {
+          setState(() {
+            game = chess.Chess();
+          });
+        }
+      });
+    }
+  }
+
+  @override
+  void dispose() {
+    _streamSubscription?.cancel();
+    super.dispose();
+  }
+  bool get isSpectator => widget.color == null;
+
+  bool canMove(String pieceName) {
+    if (isSpectator) return false;
+    if (widget.color == "white" && pieceName.contains("white")) {
+      return game.turn == chess.Color.WHITE;
+    }
+    if (widget.color == "black" && pieceName.contains("black")) {
+      return game.turn == chess.Color.BLACK;
+    }
+    return false;
+  }
+
+  bool onMove(String from, String to, {String? promotion}) {
+    // Make the move locally
+    final move = {
+      'from': from,
+      'to': to,
+      if (promotion != null) 'promotion': promotion,
+    };
+    if (game.move(move)) {
+      setState(() {});
+      // Send to server if connected
+      if (widget.channel != null) {
+        widget.channel!.sink.add(jsonEncode({"type": "move", "move": move}));
+      }
+      endGame();
+      return true;
+    }
+    return false;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -275,7 +338,7 @@ class ChessScreenState extends State<ChessScreen> {
       return;
     }
 
-    if (game.move({'from': from, 'to': to})) {
+    if (onMove(from, to)) {
       // Valid move
       setState(() {
         // Remove enemy piece if present
@@ -356,7 +419,7 @@ class ChessScreenState extends State<ChessScreen> {
           _showPromotionDialog(from, to);
           return;
         }
-        if (game.move({'from': from, 'to': to})) {
+        if (onMove(from, to)) {
           // Valid move
           // Remove enemy piece if present
           if (pieceAtPosition != null) {
@@ -426,7 +489,7 @@ class ChessScreenState extends State<ChessScreen> {
                       }
 
                       // Perform the promotion move
-                      game.move({'from': from, 'to': to, 'promotion': piece});
+                      onMove(from, to, promotion: piece);
 
                       setState(() {
                         // Update the promoted pawn's name in the piecePositions map
@@ -587,5 +650,14 @@ class ChessScreenState extends State<ChessScreen> {
   String getPromotionPieceImage(String piece, chess.Color color) {
     final prefix = color == chess.Color.WHITE ? 'w' : 'b';
     return 'assets/pieces/$prefix$piece.png';
+  }
+
+  Map<String, dynamic> parseMessage(dynamic data) {
+    try {
+      return Map<String, dynamic>.from(jsonDecode(data));
+    } catch (e) {
+      ChessScreenState.logger.e("Error parsing message: $e");
+      return {}; // return empty map if it fails
+    }
   }
 }
