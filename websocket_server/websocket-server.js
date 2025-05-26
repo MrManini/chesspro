@@ -115,6 +115,12 @@ wss.on('connection', async (ws, req) => {
                     await resetGame();
                     setColor(player1Color);
                     isGameOngoing = true;
+                    console.log(`Game started in mode: ${gamemode}`);
+                    wss.clients.forEach((client) => {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(JSON.stringify({ type: "game_started", mode: gamemode }));
+                        }
+                    });
                 }
                 if (data.command === "admin.transfer_admin") {
                     transferAdmin(data.targetWs);

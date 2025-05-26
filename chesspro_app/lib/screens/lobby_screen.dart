@@ -77,6 +77,20 @@ class LobbyScreenState extends State<LobbyScreen> {
               players.remove(message["username"]);
             });
           }
+        } else if (message["type"] == "game_started") {
+          if (!widget.isAdmin) {
+            if (!mounted) return; // <-- Add this line
+            Navigator.pushReplacement(
+              context,
+              MaterialPageRoute(
+                builder: (context) => ChessScreen(
+                  color: null,
+                  channel: channel,
+                  stream: broadcastStream,
+                ),
+              ),
+            );
+          }
         }
 
         // If first successful message, mark as connected
