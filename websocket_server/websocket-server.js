@@ -118,6 +118,11 @@ wss.on('connection', async (ws, req) => {
                 }
                 if (data.command === "admin.set_color" && !isGameOngoing) {
                     setColor(data.color);
+                    for (const client of wss.clients) {
+                        if (client.readyState === WebSocket.OPEN) {
+                            client.send(JSON.stringify({ type: "color_set", player1Color }));
+                        }
+                    }
                 }
                 if (data.command === "admin.start_game" && isGameReady()) {
                     await resetGame();

@@ -90,6 +90,10 @@ class ChessScreenState extends State<ChessScreen> {
         }
       });
     }
+
+    if (widget.color == "black") {
+      isFlipped = true; // Flip the board for black player
+    }
   }
 
   @override

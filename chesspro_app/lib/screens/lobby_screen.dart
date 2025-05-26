@@ -19,12 +19,13 @@ class LobbyScreen extends StatefulWidget {
 class LobbyScreenState extends State<LobbyScreen> {
   WebSocketChannel? channel;
   bool serverConnected = false;
-  String selectedColor = "random";
+  String? selectedColor;
   List<String> players = []; // will be filled with actual users
   bool gameReady = false;
   static var logger = Logger();
   late StreamSubscription channelSubscription;
   late Stream<dynamic> broadcastStream;
+  String role = "spectator"; // Default role
 
   @override
   void initState() {
@@ -68,6 +69,14 @@ class LobbyScreenState extends State<LobbyScreen> {
               }
             });
           }
+        } else if (message["type"] == "role") {
+          setState(() {
+            role = message["role"];
+          });
+        } else if (message["type"] == "color_set" && role == "player2") {
+          setState(() {
+            selectedColor = message["color"] == "white" ? "black" : "white";
+          });
         } else if (message["type"] == "game_ready") {
           setState(() {
             gameReady = true;
@@ -85,7 +94,7 @@ class LobbyScreenState extends State<LobbyScreen> {
               context,
               MaterialPageRoute(
                 builder: (context) => ChessScreen(
-                  color: null,
+                  color: selectedColor,
                   channel: channel,
                   stream: broadcastStream,
                 ),
@@ -129,6 +138,13 @@ class LobbyScreenState extends State<LobbyScreen> {
     if (!widget.isAdmin) return;
     if (serverConnected && players.length >= 2) {
       try {
+        if (selectedColor == null) {
+            selectedColor = (["white", "black"]..shuffle()).first;
+            ApiService.sendMessage(channel!, {
+              "command": "admin.set_color",
+              "color": selectedColor,
+            });
+        }
         ApiService.sendMessage(channel!, {"command": "admin.start_game"});
         logger.i("Starting game with color: $selectedColor");
 
@@ -137,7 +153,7 @@ class LobbyScreenState extends State<LobbyScreen> {
           MaterialPageRoute(
             builder:
                 (context) => ChessScreen(
-                  color: selectedColor == "random" ? null : selectedColor,
+                  color: selectedColor,
                   channel: channel,
                   stream: broadcastStream,
                 ),
