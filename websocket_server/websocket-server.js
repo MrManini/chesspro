@@ -28,6 +28,8 @@ let player2 = null;
 let player1Color = 'random';
 let player2Color = null;
 let lastUsernameConnected = null;
+let player1Username = null;
+let player2Username = null;
 
 wss.on('connection', async (ws, req) => {
     const token = new URL(req.url, `http://localhost`).searchParams.get('token');
@@ -131,7 +133,12 @@ wss.on('connection', async (ws, req) => {
                     console.log(`Game started in mode: ${gamemode}`);
                     wss.clients.forEach((client) => {
                         if (client.readyState === WebSocket.OPEN) {
-                            client.send(JSON.stringify({ type: "game_started", mode: gamemode }));
+                            client.send(JSON.stringify({
+                                type: "game_started",
+                                mode: gamemode,
+                                player1: player1Username,
+                                player2: player2Username
+                            }));
                         }
                     });
                 }
@@ -201,13 +208,16 @@ function setGameMode(mode) {
     if (mode === "pvp") {
         const clients = Array.from(wss.clients);
         player1 = admin;
+        player1Username = player1.lastUsernameConnected;
         player1.send(JSON.stringify({ type: "role", role: "player1" }));
         player2 = clients.find((ws) => ws !== admin);
         if (player2) {
             player2.send(JSON.stringify({ type: "role", role: "player2" }));
+            player2Username = player2.lastUsernameConnected;
         }
     } else if (mode === "pvb") {
         player1 = admin;
+        player1Username = player1.lastUsernameConnected;
         player1.send(JSON.stringify({ type: "role", role: "player1" }));
         player2 = null;
     } else if (mode === "bvb") {

@@ -89,7 +89,7 @@ class LobbyScreenState extends State<LobbyScreen> {
           }
         } else if (message["type"] == "game_started") {
           if (!widget.isAdmin) {
-            if (!mounted) return; // <-- Add this line
+            if (!mounted) return;
             Navigator.pushReplacement(
               context,
               MaterialPageRoute(
@@ -97,6 +97,8 @@ class LobbyScreenState extends State<LobbyScreen> {
                   color: selectedColor,
                   channel: channel,
                   stream: broadcastStream,
+                  player1: message["player1"],
+                  player2: message["player2"],
                 ),
               ),
             );

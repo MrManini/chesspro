@@ -10,7 +10,16 @@ class ChessScreen extends StatefulWidget {
   final String? color;
   final WebSocketChannel? channel;
   final Stream? stream;
-  const ChessScreen({super.key, this.channel, this.color, this.stream});
+  final String? player1;
+  final String? player2;
+  const ChessScreen({
+    super.key,
+    this.channel,
+    this.color,
+    this.stream,
+    this.player1,
+    this.player2,
+  });
 
   @override
   ChessScreenState createState() => ChessScreenState();
@@ -72,9 +81,10 @@ class ChessScreenState extends State<ChessScreen> {
   @override
   void initState() {
     super.initState();
-    
-    final streamToUse = widget.stream ?? widget.channel?.stream.asBroadcastStream();
-    
+
+    final streamToUse =
+        widget.stream ?? widget.channel?.stream.asBroadcastStream();
+
     if (streamToUse != null) {
       _streamSubscription = streamToUse.listen((data) {
         logger.i("Received: $data");
@@ -101,6 +111,7 @@ class ChessScreenState extends State<ChessScreen> {
     _streamSubscription?.cancel();
     super.dispose();
   }
+
   bool get isSpectator => widget.color == null;
 
   bool canMove(String pieceName) {
@@ -146,6 +157,16 @@ class ChessScreenState extends State<ChessScreen> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             // Top elements
+            // Top username (player2, usually black)
+            if (widget.player2 != null && widget.player1 != null)
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: Text(
+                  isFlipped ? widget.player2! : widget.player1!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
             SizedBox(
               width: boardSize,
               height: boardSize,
@@ -298,6 +319,17 @@ class ChessScreenState extends State<ChessScreen> {
             ),
 
             // Bottom elements
+            // Bottom username (player1, usually white)
+            if (widget.player1 != null && widget.player2 != null)
+              Padding(
+                padding: const EdgeInsets.only(top: 8.0),
+                child: Text(
+                  isFlipped ? widget.player2! : widget.player1!,
+                  textAlign: TextAlign.center,
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                ),
+              ),
+            // Flip button
             SizedBox(height: 20),
             ElevatedButton(
               onPressed: () {
