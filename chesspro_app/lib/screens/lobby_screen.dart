@@ -26,6 +26,7 @@ class LobbyScreenState extends State<LobbyScreen> {
   late StreamSubscription channelSubscription;
   late Stream<dynamic> broadcastStream;
   String role = "spectator"; // Default role
+  bool canStart = false;
 
   @override
   void initState() {
@@ -168,7 +169,12 @@ class LobbyScreenState extends State<LobbyScreen> {
 
   @override
   Widget build(BuildContext context) {
-    final canStart = serverConnected && players.length >= 2;
+
+    if (widget.gamemode == "pvp") {
+      canStart = serverConnected && players.length >= 2;
+    } else {
+      canStart = serverConnected && players.isNotEmpty;
+    }
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
