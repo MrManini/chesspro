@@ -144,7 +144,7 @@ class LobbyScreenState extends State<LobbyScreen> {
     if (serverConnected && channel != null) {
       ApiService.sendMessage(channel!, {
         "command": "admin.set_color",
-        "color": color,
+        "color": selectedColor,
       });
     }
   }

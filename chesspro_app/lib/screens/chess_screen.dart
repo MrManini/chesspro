@@ -92,6 +92,7 @@ class ChessScreenState extends State<ChessScreen> {
         if (message["type"] == "move") {
           setState(() {
             game.move(message["move"]);
+            updatePiecePosition(message["move"]);
           });
         } else if (message["type"] == "reset") {
           setState(() {
@@ -142,6 +143,25 @@ class ChessScreenState extends State<ChessScreen> {
       return true;
     }
     return false;
+  }
+
+  void updatePiecePosition(move) {
+    // Update the piece position in the piecePositions map
+    Offset from = _convertToOffset(move['from']);
+    Offset to = _convertToOffset(move['to']);
+    String pieceAtPosition = '';
+    for (var entry in piecePositions.entries) {
+      if (entry.value == from) {
+        pieceAtPosition = entry.key;
+        break;
+      }
+    }
+
+    // Remove the piece from its old position
+    piecePositions.remove(pieceAtPosition);
+
+    // Add the piece to its new position
+    piecePositions[pieceAtPosition] = to;
   }
 
   @override
@@ -350,13 +370,6 @@ class ChessScreenState extends State<ChessScreen> {
     if (isGameOver || !canMove(pieceAtPosition)) {
       return;
     }
-    bool isWhiteTurn = game.turn == chess.Color.WHITE;
-    bool isWhitePiece =
-        pieceAtPosition != null && pieceAtPosition.contains('white');
-    if ((isWhiteTurn && !isWhitePiece) || (!isWhiteTurn && isWhitePiece)) {
-      logger.i('Dragging disabled: Not your turn');
-      return;
-    }
     setState(() {
       selectedPiece = pieceAtPosition;
     });
@@ -428,10 +441,8 @@ class ChessScreenState extends State<ChessScreen> {
 
       if (selectedPiece == null) {
         // First tap - select the piece if there is one
-        if (pieceAtPosition != null && canMove(pieceAtPosition)) {
-          bool isWhitePiece = pieceAtPosition.contains('white');
-          if ((widget.color == "black" && !isWhitePiece) ||
-              (widget.color == "white" && isWhitePiece)) {
+        if (pieceAtPosition != null) {
+          if (!canMove(pieceAtPosition)) {
             return; // Exit early if it's not the player's piece
           }
           selectedPiece = pieceAtPosition;
@@ -445,8 +456,8 @@ class ChessScreenState extends State<ChessScreen> {
         if (pieceAtPosition != null &&
             pieceAtPosition != selectedPiece &&
             canMove(pieceAtPosition)) {
-              selectedPiece = pieceAtPosition; // Select the new piece
-              return;
+          selectedPiece = pieceAtPosition; // Select the new piece
+          return;
         }
 
         // Move the selected piece
