@@ -170,52 +170,59 @@ class LobbyScreenState extends State<LobbyScreen> {
   Widget build(BuildContext context) {
     final canStart = serverConnected && players.length >= 2;
 
-    return Scaffold(
-      appBar: AppBar(title: Text("Lobby")),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            Text(
-              serverConnected
-                  ? "Connected to server!"
-                  : "Connecting to server...",
-            ),
-            SizedBox(height: 20),
-            if (widget.isAdmin) ...[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceAround,
-                children:
-                    ["white", "random", "black"].map((color) {
-                      return ElevatedButton(
-                        onPressed: () => selectColor(color),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor:
-                              selectedColor == color ? Colors.green : null,
-                        ),
-                        child: Text(color.toUpperCase()),
-                      );
-                    }).toList(),
+    return PopScope(
+      onPopInvokedWithResult: (didPop, result) {
+      if (didPop && channel != null) {
+        ApiService.closeWebSocket(channel!);
+      }
+    },
+      child: Scaffold(
+        appBar: AppBar(title: Text("Lobby")),
+        body: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            children: [
+              Text(
+                serverConnected
+                    ? "Connected to server!"
+                    : "Connecting to server...",
               ),
               SizedBox(height: 20),
-            ],
-            Text("Players:"),
-            Expanded(
-              child: ListView.builder(
-                itemCount: players.length,
-                itemBuilder:
-                    (_, index) => ListTile(title: Text(players[index])),
+              if (widget.isAdmin) ...[
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children:
+                      ["white", "random", "black"].map((color) {
+                        return ElevatedButton(
+                          onPressed: () => selectColor(color),
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor:
+                                selectedColor == color ? Colors.green : null,
+                          ),
+                          child: Text(color.toUpperCase()),
+                        );
+                      }).toList(),
+                ),
+                SizedBox(height: 20),
+              ],
+              Text("Players:"),
+              Expanded(
+                child: ListView.builder(
+                  itemCount: players.length,
+                  itemBuilder:
+                      (_, index) => ListTile(title: Text(players[index])),
+                ),
               ),
-            ),
-            SizedBox(height: 10),
-            if (widget.isAdmin)
-              ElevatedButton(
-                onPressed: canStart ? startGame : null,
-                child: Text("Start Game"),
-              )
-            else
-              Text("Waiting for admin to start the game..."),
-          ],
+              SizedBox(height: 10),
+              if (widget.isAdmin)
+                ElevatedButton(
+                  onPressed: canStart ? startGame : null,
+                  child: Text("Start Game"),
+                )
+              else
+                Text("Waiting for admin to start the game..."),
+            ],
+          ),
         ),
       ),
     );
