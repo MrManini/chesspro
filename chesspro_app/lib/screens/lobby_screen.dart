@@ -170,11 +170,9 @@ class LobbyScreenState extends State<LobbyScreen> {
   @override
   Widget build(BuildContext context) {
 
-    if (widget.gamemode == "pvp") {
-      canStart = serverConnected && players.length >= 2;
-    } else {
-      canStart = serverConnected && players.isNotEmpty;
-    }
+    canStart = widget.gamemode == "pvp" ?
+      serverConnected && players.length >= 2 :
+      players.isNotEmpty;
 
     return PopScope(
       onPopInvokedWithResult: (didPop, result) {
