@@ -347,7 +347,7 @@ class ChessScreenState extends State<ChessScreen> {
   }
 
   void onDragStarted(pieceAtPosition) {
-    if (isGameOver) {
+    if (isGameOver || !canMove(pieceAtPosition)) {
       return;
     }
     bool isWhiteTurn = game.turn == chess.Color.WHITE;
@@ -364,6 +364,10 @@ class ChessScreenState extends State<ChessScreen> {
 
   void onDragAccept(details, position) {
     if (isGameOver) return; // Prevent dragging if the game is over
+    if (!canMove(details.data)) {
+      selectedPiece = null;
+      return;
+    }
 
     String from = _convertToChessNotation(piecePositions[details.data]!);
     String to = _convertToChessNotation(position);
@@ -424,7 +428,7 @@ class ChessScreenState extends State<ChessScreen> {
 
       if (selectedPiece == null) {
         // First tap - select the piece if there is one
-        if (pieceAtPosition != null) {
+        if (pieceAtPosition != null && canMove(pieceAtPosition)) {
           bool isWhitePiece = pieceAtPosition.contains('white');
           if ((widget.color == "black" && !isWhitePiece) ||
               (widget.color == "white" && isWhitePiece)) {
@@ -438,14 +442,11 @@ class ChessScreenState extends State<ChessScreen> {
         String to = _convertToChessNotation(Offset(x.toDouble(), y.toDouble()));
 
         // Select a different piece
-        if (pieceAtPosition != null && pieceAtPosition != selectedPiece) {
-          bool isWhiteTurn = game.turn == chess.Color.WHITE;
-          bool isWhitePiece = pieceAtPosition.contains('white');
-          if ((isWhiteTurn && isWhitePiece) ||
-              (!isWhiteTurn && !isWhitePiece)) {
-            selectedPiece = pieceAtPosition; // Select the new piece
-            return;
-          }
+        if (pieceAtPosition != null &&
+            pieceAtPosition != selectedPiece &&
+            canMove(pieceAtPosition)) {
+              selectedPiece = pieceAtPosition; // Select the new piece
+              return;
         }
 
         // Move the selected piece

@@ -163,6 +163,17 @@ wss.on('connection', async (ws, req) => {
                     await handleBlackMove(ws, data.move);
                 }
             }
+            if (data.type === "move") {
+                // Echo the move to all connected clients
+                wss.clients.forEach((client) => {
+                    if (client.readyState === WebSocket.OPEN) {
+                        client.send(JSON.stringify({
+                            type: "move",
+                            move: data.move,
+                        }));
+                    }
+                });
+            }
         } catch (error) {
             console.error("Error handling message:", error);
         }
