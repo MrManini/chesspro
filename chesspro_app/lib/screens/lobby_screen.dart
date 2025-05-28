@@ -6,6 +6,8 @@ import 'package:logger/logger.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:chesspro_app/services/api_service.dart';
 import 'package:chesspro_app/services/auth_service.dart';
+import 'package:chesspro_app/services/bluetooth_service.dart';
+import 'package:chesspro_app/screens/bluetooth_screen.dart';
 
 class LobbyScreen extends StatefulWidget {
   final bool isAdmin;
@@ -27,6 +29,7 @@ class LobbyScreenState extends State<LobbyScreen> {
   late Stream<dynamic> broadcastStream;
   String role = "spectator"; // Default role
   bool canStart = false;
+  final BluetoothService bluetoothService = BluetoothService();
 
   @override
   void initState() {
@@ -181,7 +184,16 @@ class LobbyScreenState extends State<LobbyScreen> {
       }
     },
       child: Scaffold(
-        appBar: AppBar(title: Text("Lobby")),
+        appBar: AppBar(title: Text("Lobby"),
+        actions: [
+          IconButton(
+            icon: Icon(
+              bluetoothService.isConnected ? Icons.bluetooth_connected : Icons.bluetooth,
+              color: bluetoothService.isConnected ? Colors.blue : Colors.grey,
+            ),
+            onPressed: _connectToBluetooth,
+          ),
+        ],),
         body: Padding(
           padding: const EdgeInsets.all(16.0),
           child: Column(
@@ -238,6 +250,17 @@ class LobbyScreenState extends State<LobbyScreen> {
     } catch (e) {
       LobbyScreenState.logger.e("Error parsing message: $e");
       return {}; // return empty map if it fails
+    }
+  }
+
+  Future<void> _connectToBluetooth() async {
+    bool? connected = await Navigator.push(
+      context,
+      MaterialPageRoute(builder: (context) => BluetoothScreen()),
+    );
+    
+    if (connected == true) {
+      logger.i('Successfully connected to Raspberry Pi');
     }
   }
 }

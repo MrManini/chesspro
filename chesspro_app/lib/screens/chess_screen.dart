@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:chess/chess.dart' as chess;
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:logger/logger.dart';
+import 'package:chesspro_app/services/bluetooth_service.dart';
 
 class ChessScreen extends StatefulWidget {
   final String? color;
@@ -36,6 +37,7 @@ class ChessScreenState extends State<ChessScreen> {
   bool isGameOver = false;
   int promotedPieceCount = 0;
   StreamSubscription? _streamSubscription;
+  final BluetoothService bluetoothService = BluetoothService();
 
   Map<String, Offset> piecePositions = {
     'white_pawn1': Offset(0, 6),
@@ -94,6 +96,7 @@ class ChessScreenState extends State<ChessScreen> {
             game.move(message["move"]);
             updatePiecePosition(message["move"]);
           });
+          endGame();
         } else if (message["type"] == "reset") {
           setState(() {
             game = chess.Chess();
@@ -635,6 +638,13 @@ class ChessScreenState extends State<ChessScreen> {
         );
       },
     );
+  }
+
+  Future<void> sendMoveToRaspberryPi(String from, String to) async {
+    if (bluetoothService.isConnected) {
+      String command = 'MOVE:$from:$to';
+      await bluetoothService.sendCommand(command);
+    }
   }
 
   String getPieceImage(String pieceName) {
